@@ -4,14 +4,11 @@ on:
   workflow_dispatch:
     inputs:
       service_path:
-        description: "Path to the microservice"
+        description: "Path to the microservice (e.g., backend/node-services/identity-service)"
         required: true
 engine: copilot
-permissions:
-  contents: write
-  pull-requests: write
 safe-outputs:
-  - pull_requests
+  create-pull-request: null
 ---
 
 # Instructions
