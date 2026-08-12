@@ -1,0 +1,66 @@
+# ==========================================
+# Dependencies (Crucial for Monorepo)
+# ==========================================
+node_modules/
+**/node_modules/
+npm-debug.log*
+yarn-error.log*
+
+# ==========================================
+# Environment Variables & Secrets
+# ==========================================
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# ==========================================
+# Backend (NestJS Build & Cache)
+# ==========================================
+dist/
+**/dist/
+**/build/
+coverage/
+**/coverage/
+*.log
+
+# Prisma DB (if using SQLite locally)
+**/prisma/*.db
+**/prisma/*.db-journal
+
+# ==========================================
+# Frontend (Angular Build & Cache)
+# ==========================================
+.angular/
+**/.angular/
+**/out-tsc/
+**/tmp/
+.sass-cache/
+
+# ==========================================
+# OS & IDE Files
+# ==========================================
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+
+# ==========================================
+# .NET / C# (AutomationC#)
+# ==========================================
+**/bin/
+**/obj/
+**/.vs/
+*.user
+*.suo
+*.userprefs
+*.csproj.user
+
+# Test results & reports
+**/TestResults/
+**/Reports/
+**/*.trx
+**/*.coverage
+**/*.coveragexml

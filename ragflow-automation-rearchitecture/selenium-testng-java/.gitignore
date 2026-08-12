@@ -1,0 +1,32 @@
+# Ignore compiled class files
+/target/classes/
+/target/test-classes/
+*.class
+
+# Ignore build artifacts (target directory)
+/target/
+
+#reports
+/reports/
+
+# Ignore IntelliJ IDEA files
+.idea/
+*.iml
+
+# Ignore Eclipse files
+.project
+.classpath
+.settings/
+
+# Ignore log files
+/target/classes/logback.xml
+
+
+# Optionally, add other IDE-specific or environment-specific files
+.vscode/
+
+# Add any other files you want to ignore, for example:
+# .DS_Store (for macOS)
+# .env (for environment variables, if needed)
+# *.log (for any log files)
+.env
