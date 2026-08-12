@@ -1,0 +1,19 @@
+# Documentation Generation Rules
+
+## 1. Ground Truth
+- `FACTS.md` is strictly authoritative.
+- Never state an environment variable, route path, or fact that does not appear verbatim in `FACTS.md`. If it is not in the facts pack, do not guess it.
+
+## 2. Source Anchors
+- Every non-obvious claim must end with a citation: `[src: path/to/file.js:L12-L30]`.
+
+## 3. Uncertainty Protocol
+- End every generated documentation file with a section called `## ⚠️ To Verify`.
+- If you infer anything from the code that contradicts or is missing from `FACTS.md`, list it here as a checkbox.
+
+## 4. Diagrams
+- Use Mermaid syntax only (`mermaid`).
+- Use `flowchart TD` for architectures and `sequenceDiagram` for flows.
+
+## 5. Ignore Paths
+- Do not read from `node_modules/`, `dist/`, `build/`, or `coverage/`.
