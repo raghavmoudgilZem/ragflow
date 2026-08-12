@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/logo.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RAGFlow</title>
+
+    <!--
+      Theme bootstrap to avoid flash of wrong color mode.
+      This runs before React/MUI mount and sets both:
+        - documentElement[data-theme]
+        - CSS :root variables via data-theme selectors
+        - browser color-scheme
+    -->
+    <script>
+      {
+        let mode = "dark";
+
+        try {
+          const stored = localStorage.getItem("ragflow_theme_mode");
+
+          if (stored === "light" || stored === "dark") {
+            mode = stored;
+          }
+        } catch {
+          mode = "dark";
+        }
+
+        document.documentElement.dataset.theme = mode;
+        document.documentElement.style.colorScheme = mode;
+      }
+    </script>
+  </head>
+  <style>
+    html, body, #root {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      width: 100%;
+    }
+    #root {
+      display: flex;
+      flex-direction: column;
+    }
+  </style>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

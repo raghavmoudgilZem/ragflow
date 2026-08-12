@@ -1,0 +1,16 @@
+.empty-state-wrapper {
+    min-height: 100vh;
+    display: flex;
+    .create-new {
+        display: flex;
+        position: relative;
+        flex-direction: column;
+        cursor: pointer;
+        width: 21.8rem;
+        height: 9.3rem;
+        justify-content: center;
+        margin: auto;
+        align-items: flex-start;
+        padding: 1.5rem;
+    }
+}

@@ -1,0 +1,70 @@
+{
+  "pageTitle": "Dataset",
+  "createDataset": "Create dataset",
+  "searchPlaceholder": "Search",
+  "filterAriaLabel": "filter datasets",
+
+  "knowledgeList": {
+    "createKnowledgeBase": {
+      "message": "No dataset created yet",
+      "addAriaLabel": "create dataset"
+    }
+  },
+
+  "createDialog": {
+    "title": "Create dataset",
+    "submitLabel": "Save",
+    "fields": {
+      "name": {
+        "label": "Name",
+        "placeholder": "Please input name."
+      },
+      "embeddingModel": {
+        "label": "Embedding model",
+        "tooltip": "Model used to generate vector embeddings for semantic search"
+      },
+      "parseType": {
+        "label": "Parse type",
+        "options": {
+          "builtin": "Built-in",
+          "pipeline": "Choose pipeline"
+        }
+      },
+      "chunkingMethod": {
+        "label": "Built-in",
+        "placeholder": "Please select a chunking method.",
+        "tooltip": "Controls how documents are split into chunks before indexing"
+      }
+    }
+  },
+
+  "renameDialog": {
+    "title": "Rename",
+    "submitLabel": "Save",
+    "fields": {
+      "name": {
+        "label": "Name"
+      }
+    }
+  },
+
+  "deleteDialog": {
+    "title": "Delete dataset",
+    "confirmMessage": "Are you sure to delete it ?",
+    "cancelLabel": "Cancel",
+    "confirmLabel": "Delete"
+  },
+
+  "ownerFilter": {
+    "heading": "Owner",
+    "clearLabel": "Clear",
+    "submitLabel": "Submit"
+  },
+
+  "grid": {
+    "errorMessage": "Something went wrong. Please try again.",
+    "retryLabel": "Retry",
+    "fileLabel": "file",
+    "filesLabel": "files"
+  }
+}

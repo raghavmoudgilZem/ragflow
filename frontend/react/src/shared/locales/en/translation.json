@@ -1,0 +1,73 @@
+{
+  "message": {
+    "200": "The server successfully returned the requested data.",
+    "201": "Data created or modified successfully.",
+    "202": "A request has been queued in the background.",
+    "204": "Data deleted successfully.",
+    "400": "There was an error in the request and the server did not create or modify data.",
+    "401": "The user does not have permission (token, username or password is incorrect).",
+    "403": "The user is authorized, but access is forbidden.",
+    "404": "The requested record does not exist and the server did not perform an operation.",
+    "406": "The requested format is not available.",
+    "410": "The requested resource is permanently deleted and is no longer available.",
+    "413": "The request payload is too large.",
+    "422": "A validation error occurred when creating an object.",
+    "500": "An error occurred in the server. Please check the server.",
+    "502": "Gateway error.",
+    "503": "The service is unavailable and the server is temporarily overloaded or under maintenance.",
+    "504": "The gateway timed out.",
+    "networkAnomaly": "Network anomaly",
+    "networkAnomalyDescription": "There is an abnormality with your network and you cannot connect to the server.",
+    "requestError": "Request error",
+    "hint": "Hint"
+  },
+  "aiSummary": {
+    "temperature": "Temperature",
+    "temperatureTooltip": "This parameter controls the randomness of the model's predictions. A lower temperature results in more conservative responses, while a higher temperature yields more creative and diverse responses.",
+    "topP": "Top P",
+    "topPTooltip": "Also known as \"nucleus sampling\", this parameter sets a threshold for selecting a smaller set of the most likely words to sample from, cutting off the less probable ones.",
+    "presencePenalty": "Presence penalty",
+    "presencePenaltyTooltip": "This discourages the model from repeating the same information by penalizing words that have already appeared in the conversation.",
+    "frequencyPenalty": "Frequency penalty",
+    "frequencyPenaltyTooltip": "Similar to the presence penalty, this reduces the model’s tendency to repeat the same words frequently."
+  },
+  "searchSettings": {
+    "similarityThreshold": "Similarity threshold",
+    "similarityTooltip": "RAGFlow employs either a combination of weighted keyword similarity and weighted vector cosine similarity, or a combination of weighted keyword similarity and weighted reranking score during retrieval. This parameter sets the threshold for similarities between the user query and chunks. Any chunk with a similarity score below this threshold will be excluded from the results. By default, the threshold is set to 0.2. This means that only chunks with hybrid similarity score of 20 or higher will be retrieved.",
+    "vectorWeight": "Vector similarity weight",
+    "vectorWeightTooltip": "This sets the weight of keyword similarity in the combined similarity score, either used with vector cosine similarity or with reranking score. The total of the two weights must equal 1.0.",
+    "vectorLabel": "vector",
+    "fullTextLabel": "full-text"
+  },
+  "searchConfig": {
+    "title": "Search Settings",
+    "name": "Name",
+    "avatar": "Avatar",
+    "upload": "Upload",
+    "uploadHelper": "You can upload a file with 4 MB",
+    "description": "Description",
+    "datasets": "Datasets",
+    "datasetsTooltip": "Select the datasets to associate with this chat assistant. An empty dataset will not appear in the dropdown list.",
+    "pleaseSelect": "Please select",
+    "metaData": "Meta Data",
+    "selectMetaData": "Select meta data",
+    "cancel": "Cancel",
+    "saving": "Saving...",
+    "save": "Save"
+  },
+  "knowledgeDetails": {
+    "name": "Name",
+    "chunkNumber": "Chunks",
+    "parsingStatus": "Parsing status",
+    "processDuration": "Duration",
+    "progressMsg": "Progress",
+    "noDocuments": "No documents have been uploaded to this dataset yet.",
+    "documentsError": "Unable to load documents for this dataset.",
+    "runningStatus0": "PENDING",
+    "runningStatus1": "PARSING",
+    "runningStatus2": "CANCELED",
+    "runningStatus3": "SUCCESS",
+    "runningStatus4": "FAIL",
+    "runningStatus5": "SCHEDULE"
+  }
+}
