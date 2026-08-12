@@ -1,0 +1,11 @@
+<div class="custom-pagination">
+  <span class="total-text">Total {{ totalItems }}</span>
+  <mat-paginator 
+    [length]="totalItems"
+    [pageSize]="pageSize"
+    [pageSizeOptions]="pageSizeOptions"
+    (page)="onPageEvent($event)"
+    showFirstLastButtons
+    aria-label="Select page">
+  </mat-paginator>
+</div>

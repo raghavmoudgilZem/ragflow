@@ -1,0 +1,152 @@
+@use '@angular/material' as mat;
+
+.login-container {
+  min-height: 100vh; 
+  background-image: radial-gradient(circle at 50% 50%, #1c2128 0%, var(--app-bg-dark) 100%);
+  color: var(--color-white);
+}
+
+.header-logo {
+  padding: 24px 40px; 
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  .logo-text {
+    font-weight: 600;
+    font-size: 20px; 
+  }
+}
+
+.main-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding-bottom: 80px; 
+
+  .hero-title {
+    font-size: 36px; 
+    font-weight: 600;
+    margin-bottom: 56px; 
+  }
+
+  .form-section-title {
+    font-size: 18px; 
+    font-weight: 500;
+    color: var(--color-white);
+    margin-bottom: 24px; 
+    letter-spacing: 0.3px;
+  }
+}
+
+.login-card {
+  width: 100%;
+  max-width: 520px;
+  background-color: var(--app-card-bg);
+  border: 1px solid var(--app-color-border);
+  border-radius: 12px;
+  padding: 40px 40px 0 40px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+
+  .input-label {
+    font-size: 14px; 
+    margin-bottom: 8px;
+    color: var(--text-secondary);
+    font-weight: 500;
+
+    .required {
+      color: var(--error-color);
+      margin-right: 4px;
+    }
+  }
+
+  mat-form-field {
+    width: 100%;
+    margin-bottom: 8px;
+
+    @include mat.form-field-density(-3);
+    @include mat.button-density(-1);
+
+    ::ng-deep .mat-mdc-text-field-wrapper {
+      background-color: var(--input-fill-color);
+      border-radius: 8px;
+    }
+  }
+
+  .error-wrapper {
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+  }
+
+  .error-text {
+    color: var(--error-color);
+    font-size: 12px; 
+    font-weight: 500;
+    line-height: 1;
+    display: block;
+  }
+}
+
+.form-options {
+  margin-bottom: 24px;
+
+  .custom-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    input[type='checkbox'] {
+      cursor: pointer;
+      width: 16px;
+      height: 16px;
+    }
+
+    label {
+      color: var(--text-secondary);
+      font-size: 14px; 
+      cursor: pointer;
+      user-select: none;
+    }
+  }
+}
+
+.signin-btn {
+  font-weight: 600;
+  margin-top: 24px;
+  border-radius: 8px;
+
+  &:not(:disabled) {
+    background-color: var(--color-white);
+    color: var(--color-black);
+    cursor: pointer;
+  }
+
+  &:disabled {
+    background-color: var(--btn-disabled);
+    color: var(--disabled-color);
+    cursor: not-allowed;
+    opacity: 0.8;
+    border: 1px solid var(--input-border);
+  }
+}
+
+.signup-text {
+  text-align: right;
+  color: var(--text-secondary);
+  margin-top: 40px;
+  font-size: 14px;
+  cursor: pointer;
+
+  a {
+    color: var(--app-primary);
+    text-decoration: none;
+    font-weight: 500;
+  }
+}

@@ -1,0 +1,52 @@
+.placeholder-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+}
+
+.placeholder-content {
+  text-align: center;
+  max-width: 500px;
+  padding: 48px 24px;
+  background-color: var(--app-card-bg);
+  border: 1px solid var(--app-color-border);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-color: var(--border-hover);
+  }
+
+  .placeholder-icon {
+    font-size: 72px;
+    width: 72px;
+    height: 72px;
+    color: var(--app-teal);
+    margin: 0 auto 24px;
+  }
+
+  h2 {
+    font-size: 28px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 16px 0;
+  }
+
+  p {
+    font-size: 16px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin: 0 0 32px 0;
+  }
+
+  .coming-soon {
+    font-style: italic;
+    font-size: 14px;
+    margin-top: 24px;
+    color: var(--text-badge);
+  }
+}

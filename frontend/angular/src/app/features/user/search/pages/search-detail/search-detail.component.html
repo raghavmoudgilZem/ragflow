@@ -1,0 +1,137 @@
+<div class="search-detail-wrapper">
+  <div class="search-detail-layout">
+    @if (!isSearchActive()) {
+      <app-search-landing
+        [initialQuery]="searchQuery()"
+        (searchSubmitted)="executeSearch($event)"
+        (toggleSettings)="toggleSettings()"
+      ></app-search-landing>
+    } @else {
+      <app-search-active
+        [query]="searchQuery()"
+        [results]="searchResults()"
+        [totalChunks]="totalChunks()"
+        [docCount]="docCount()"
+        [isSearching]="isSearching()"
+        [showMetadata]="settings().show_chunk_metadata || false"
+        (searchSubmitted)="executeSearch($event)"
+        (toggleSettings)="toggleSettings()"
+        (resetSearch)="resetToLanding()"
+      ></app-search-active>
+    }
+
+    @if (isSettingsOpen()) {
+      <aside class="settings-sidebar">
+        <div class="sidebar-header">
+          <h3>Search settings</h3>
+          <button class="close-btn" (click)="toggleSettings()">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+
+        <div class="sidebar-body">
+          <div class="app-info-card">
+            <div class="upload-box">
+              <mat-icon>add</mat-icon>
+              <span>Upload</span>
+            </div>
+            <div class="app-info-meta">
+              <div class="name-row">
+                <span class="app-name">{{ currentApp()?.name || 'sea' }}</span>
+                <mat-icon class="edit-icon">edit</mat-icon>
+              </div>
+              <p class="app-prompt">You are an intelligent assistant.</p>
+            </div>
+          </div>
+
+          <div class="setting-item">
+            <label><span class="required">*</span>Datasets <mat-icon class="help-icon">help_outline</mat-icon></label>
+            <mat-select [(value)]="settings().datasets" placeholder="Select value" class="custom-select">
+              @for (ds of availableDatasets; track ds.id) {
+                <mat-option [value]="ds.name">{{ ds.name }}</mat-option>
+              }
+            </mat-select>
+          </div>
+
+          <div class="setting-item toggle-item">
+            <span>Show chunk metadata <mat-icon class="help-icon">help_outline</mat-icon></span>
+            <mat-slide-toggle
+              [checked]="settings().show_chunk_metadata"
+              (change)="settings().show_chunk_metadata = $event.checked"
+            ></mat-slide-toggle>
+          </div>
+
+          <div class="setting-item slider-item">
+            <div class="slider-header">
+              <span>Similarity threshold <mat-icon class="help-icon">help_outline</mat-icon></span>
+            </div>
+            <div class="slider-control-row">
+              <mat-slider min="0" max="1" step="0.05" class="custom-slider">
+                <input
+                  matSliderThumb
+                  [value]="settings().similarity_threshold"
+                  (valueChange)="settings().similarity_threshold = $event"
+                />
+              </mat-slider>
+              <span class="value-box">{{ settings().similarity_threshold }}</span>
+            </div>
+          </div>
+
+          <div class="setting-item slider-item">
+            <div class="slider-header">
+              <span>Vector similarity weight <mat-icon class="help-icon">help_outline</mat-icon></span>
+            </div>
+            <div class="weight-labels">
+              <span class="weight-tag">vector <strong>{{ settings().vector_similarity_weight }}</strong></span>
+              <span class="weight-tag">full-text <strong>{{ settings().full_text_similarity_weight }}</strong></span>
+            </div>
+            <div class="slider-control-row">
+              <mat-slider min="0" max="1" step="0.05" class="custom-slider">
+                <input
+                  matSliderThumb
+                  [value]="settings().vector_similarity_weight"
+                  (valueChange)="onVectorWeightChange($event)"
+                />
+              </mat-slider>
+              <span class="value-box">{{ settings().vector_similarity_weight }}</span>
+            </div>
+          </div>
+
+          <div class="setting-item toggle-item">
+            <span>Rerank model</span>
+            <mat-slide-toggle></mat-slide-toggle>
+          </div>
+
+          <div class="setting-item toggle-item">
+            <span>AI summary</span>
+            <mat-slide-toggle
+              [checked]="settings().ai_summary"
+              (change)="settings().ai_summary = $event.checked"
+            ></mat-slide-toggle>
+          </div>
+
+          <div class="setting-item toggle-item">
+            <span>Enable related search</span>
+            <mat-slide-toggle
+              [checked]="settings().enable_related_search"
+              (change)="settings().enable_related_search = $event.checked"
+            ></mat-slide-toggle>
+          </div>
+
+          <div class="setting-item toggle-item">
+            <span>Show query mindmap</span>
+            <mat-slide-toggle
+              [checked]="settings().show_query_mindmap"
+              (change)="settings().show_query_mindmap = $event.checked"
+            ></mat-slide-toggle>
+          </div>
+        </div>
+
+        <div class="sidebar-footer">
+          <button class="btn-cancel" (click)="toggleSettings()">Cancel</button>
+          <button class="btn-save" (click)="saveSettings()">Save</button>
+        </div>
+      </aside>
+    }
+  </div>
+</div>

@@ -1,0 +1,113 @@
+.table-container {
+  border-radius: 12px;
+  border: 1px solid var(--table-border);
+  overflow: hidden;
+  background-color: var(--table-bg);
+
+  table {
+    background: transparent;
+    width: 100%;
+    border-collapse: collapse;
+
+    .mat-mdc-header-cell {
+      background-color: var(--table-header-bg);
+      color: var(--table-header-text);
+      font-weight: 400;
+      font-size: 14px;
+      text-transform: capitalize;
+      border-bottom: 1px solid var(--table-border);
+      padding: 16px;
+
+      &.col-check {
+        width: 48px;
+        padding: 8px 12px;
+      }
+
+      // Sort header button styling
+      .sort-header-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        background: transparent;
+        border: none;
+        border-radius: 6px;
+        color: inherit;
+        font-size: inherit;
+        font-weight: inherit;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+        background-color: var(--table-header-bg);
+
+        &:hover {
+          background-color: var(--border-hover);
+        }
+
+        .sort-icon {
+          font-size: 16px;
+          width: 16px;
+          height: 16px;
+          color: var(--text-secondary);
+        }
+      }
+    }
+
+    .mat-mdc-cell {
+      color: var(--table-cell-text);
+      font-size: 14px;
+      padding: 16px;
+      border-bottom: 1px solid var(--table-row-border);
+
+      &.col-check {
+        width: 48px;
+        padding: 8px 12px;
+      }
+    }
+  }
+
+  .status-badge {
+    font-size: 12px;
+    font-weight: 400;
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 12px;
+    transition: all 0.2s ease;
+    background-color: var(--table-header-bg);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+
+    // Status badges with dots
+    &.alive,
+    &.timeout {
+      gap: 8px;
+
+      &::before {
+        content: '';
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+      }
+    }
+
+    &.alive {
+      color: var(--status-success);
+      background-color: rgba(76, 175, 80, 0.1);
+      border-color: rgba(76, 175, 80, 0.2);
+
+      &::before {
+        background-color: var(--status-success);
+      }
+    }
+
+    &.timeout {
+      color: var(--status-error);
+      background-color: rgba(244, 67, 54, 0.1);
+      border-color: rgba(244, 67, 54, 0.2);
+
+      &::before {
+        background-color: var(--status-error);
+      }
+    }
+  }
+}

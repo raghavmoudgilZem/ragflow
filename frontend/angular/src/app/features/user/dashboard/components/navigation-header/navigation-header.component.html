@@ -1,0 +1,128 @@
+<header class="navigation-header">
+  <div class="nav-container">
+    <!-- Logo Section -->
+    <div class="brand-section">
+      <button class="brand-logo-btn" (click)="navigateToHome()" aria-label="Go to home">
+        <img src="/logo.svg" alt="RAGFlow Logo" class="brand-logo" />
+      </button>
+    </div>
+
+    <!-- Segmented Navigation Control -->
+    <div class="segmented-control">
+      @for (item of navItems; track item.path) {
+        <a [routerLink]="item.path" class="segment-item" [class.active]="isActive(item.path)">
+          @if (item.isHome) {
+            <mat-icon class="segment-icon">{{ item.icon }}</mat-icon>
+          } @else {
+            <span class="segment-label">{{ item.label }}</span>
+          }
+        </a>
+      }
+    </div>
+
+    <!-- Right Section (Actions) -->
+    <div class="nav-actions">
+      <!-- Discord -->
+      <a
+        href="https://discord.com/invite/NjYzJD3GM3"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="action-link"
+        matTooltip="Discord Community"
+      >
+        <mat-icon class="action-icon">forum</mat-icon>
+      </a>
+
+      <!-- GitHub -->
+      <a
+        href="https://github.com/infiniflow/ragflow"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="action-link"
+        matTooltip="GitHub Repository"
+      >
+        <mat-icon class="action-icon">code</mat-icon>
+      </a>
+
+      <!-- TODO: Language Selector - To be implemented with i18n support -->
+      <!-- User Story: Language dropdown with default English, updates UI language on selection -->
+      <!-- Implementation: Add i18n service, language resources, and translation support -->
+      <!--
+      <button
+        mat-button
+        [matMenuTriggerFor]="languageMenu"
+        class="action-btn language-btn"
+      >
+        <span class="language-text">English</span>
+        <mat-icon class="dropdown-icon">expand_more</mat-icon>
+      </button>
+      <mat-menu #languageMenu="matMenu" class="custom-menu">
+        <button mat-menu-item>English</button>
+        <button mat-menu-item>中文</button>
+        <button mat-menu-item>日本語</button>
+      </mat-menu>
+      -->
+
+      <!-- TODO: Help Icon - To be implemented with documentation links -->
+      <!-- User Story: Help icon redirects to documentation/help resources -->
+      <!-- Implementation: Add help service, error handling for unreachable resources -->
+      <!--
+      <a
+        href="https://ragflow.io/docs/dev/category/guides"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="action-link"
+        matTooltip="Documentation"
+      >
+        <mat-icon class="action-icon">help_outline</mat-icon>
+      </a>
+      -->
+
+      <!-- TODO: Theme Toggle - To be implemented with theme service -->
+      <!-- User Story: Theme toggle switches between light/dark mode -->
+      <!-- Implementation: Add theme service, persist preference, handle toggle failures -->
+      <!--
+      <button
+        mat-icon-button
+        class="action-link"
+        matTooltip="Toggle theme"
+        (click)="toggleTheme()"
+      >
+        <mat-icon class="action-icon">{{ isDarkTheme ? 'light_mode' : 'dark_mode' }}</mat-icon>
+      </button>
+      -->
+
+      <!-- Notifications Bell (conditional) -->
+      @if (hasNotifications) {
+        <button mat-icon-button class="action-link notification-btn" matTooltip="Notifications">
+          <mat-icon class="action-icon">notifications</mat-icon>
+          <span class="notification-dot"></span>
+        </button>
+      }
+
+      <!-- TODO: User Profile Avatar - To be implemented with auth service -->
+      <!-- User Story: Profile avatar with dropdown (Profile, Settings, Logout) -->
+      <!-- Implementation: Fetch user data from auth service, show default avatar if unavailable -->
+      <!--
+      <button
+        mat-icon-button
+        [matMenuTriggerFor]="profileMenu"
+        class="profile-btn"
+        matTooltip="Profile"
+      >
+        <div class="profile-avatar">{{ getUserInitial() }}</div>
+      </button>
+      <mat-menu #profileMenu="matMenu" class="custom-menu">
+        <button mat-menu-item (click)="navigateToProfile()">
+          <mat-icon>person</mat-icon>
+          <span>Profile</span>
+        </button>
+        <button mat-menu-item (click)="logout()">
+          <mat-icon>logout</mat-icon>
+          <span>Logout</span>
+        </button>
+      </mat-menu>
+      -->
+    </div>
+  </div>
+</header>

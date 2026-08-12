@@ -1,0 +1,25 @@
+<div class="admin-layout">
+  <aside class="sidebar" [class.collapsed]="collapsed">
+    <div class="logo">
+      <img src="logo.svg" alt="RAGFlow logo" width="32" height="32" />
+      <span>RAGFlow</span>
+    </div>
+    <nav class="nav-menu">
+      <a routerLink="/admin/service-status" routerLinkActive="active" class="nav-item"
+        >Service status</a
+      >
+      <a routerLink="/admin/users" routerLinkActive="active" class="nav-item">User management</a>
+      <a routerLink="/dashboard/dataset" routerLinkActive="active" class="nav-item"
+        >Dataset management</a
+      >
+    </nav>
+    <div class="user-info">
+      <div class="user-id">c72550a2</div>
+      <!-- replace with dynamic username when we have this id -->
+      <button (click)="logout()" aria-label="Log out" class="logout-btn">Log out</button>
+    </div>
+  </aside>
+  <main class="content-area">
+    <router-outlet></router-outlet>
+  </main>
+</div>

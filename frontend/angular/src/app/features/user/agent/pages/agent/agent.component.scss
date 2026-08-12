@@ -1,0 +1,124 @@
+@use '../../../../../shared/styles/mixins';
+
+.agent-page {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
+
+  @include mixins.respond-to(xs) {
+    padding: var(--spacing-lg, 24px) var(--spacing-sm, 12px);
+  }
+}
+
+.page-header {
+  padding: var(--page-header-padding);
+  margin-bottom: var(--page-header-margin-bottom);
+
+  .header-content {
+    @include mixins.flex-column(var(--page-header-gap));
+  }
+
+  .page-title {
+    display: flex;
+    align-items: center;
+    @include mixins.flex-row(var(--page-title-gap));
+    font-size: var(--page-title-font-size);
+    font-weight: var(--page-title-font-weight);
+    color: var(--text-primary);
+    margin: 0;
+    line-height: var(--page-title-line-height);
+
+    .title-icon {
+      font-size: var(--page-title-icon-size);
+      width: var(--page-title-icon-size);
+      height: var(--page-title-icon-size);
+      color: var(--app-teal);
+    }
+  }
+
+  .page-subtitle {
+    font-size: var(--page-subtitle-font-size);
+    color: var(--text-secondary);
+    margin: 0;
+    line-height: var(--page-subtitle-line-height);
+  }
+
+  @media (max-width: 768px) {
+    padding: var(--page-header-padding-mobile);
+
+    .page-title {
+      font-size: var(--page-title-font-size-mobile);
+
+      .title-icon {
+        font-size: var(--page-title-icon-size-mobile);
+        width: var(--page-title-icon-size-mobile);
+        height: var(--page-title-icon-size-mobile);
+      }
+    }
+
+    .page-subtitle {
+      font-size: var(--page-subtitle-font-size-mobile);
+    }
+  }
+}
+
+.loading-container {
+  @include mixins.loading-container(var(--loading-min-height, 400px));
+
+  .loading-text {
+    font-size: var(--font-size-sm, 14px);
+    color: var(--text-secondary);
+    margin: 0;
+  }
+
+  ::ng-deep .mat-mdc-progress-spinner {
+    --mdc-circular-progress-active-indicator-color: var(--app-teal);
+  }
+}
+
+.empty-state {
+  @include mixins.empty-state(var(--empty-state-min-height, 400px));
+
+  .empty-icon {
+    font-size: var(--icon-size-2xl, 72px);
+    width: var(--icon-size-2xl, 72px);
+    height: var(--icon-size-2xl, 72px);
+    color: var(--text-tertiary);
+    margin-bottom: var(--spacing-md, 16px);
+  }
+
+  h3 {
+    font-size: var(--font-size-xl, 20px);
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 var(--spacing-xs, 8px) 0;
+  }
+
+  p {
+    font-size: var(--font-size-sm, 14px);
+    color: var(--text-secondary);
+    margin: 0;
+  }
+}
+
+.agents-grid {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: var(--grid-gap, 24px);
+  margin-bottom: var(--spacing-lg, 24px);
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 0;
+  margin-top: 16px;
+
+  // Responsive grid: 1 col mobile, expands to 2/3/4/5 cols on larger screens
+  @include mixins.responsive-grid(var(--grid-gap, 24px));
+
+  > * {
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+}

@@ -1,0 +1,46 @@
+<div class="filter-panel">
+  <div class="filter-panel__header">
+    <span class="filter-panel__title">Filters</span>
+  </div>
+
+  <form [formGroup]="form" class="filter-panel__form">
+    <div class="filter-panel__field">
+      <label class="filter-panel__label">Created date range</label>
+      <div class="filter-panel__date-row">
+        <mat-form-field appearance="outline" class="filter-panel__date-input">
+          <input
+            matInput
+            [matDatepicker]="fromPicker"
+            formControlName="createdFrom"
+            placeholder="From"
+          />
+          <mat-datepicker-toggle matSuffix [for]="fromPicker" />
+          <mat-datepicker #fromPicker />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="filter-panel__date-input">
+          <input matInput [matDatepicker]="toPicker" formControlName="createdTo" placeholder="To" />
+          <mat-datepicker-toggle matSuffix [for]="toPicker" />
+          <mat-datepicker #toPicker />
+        </mat-form-field>
+      </div>
+    </div>
+
+    <div class="filter-panel__field">
+      <label class="filter-panel__label">Embedding model</label>
+      <mat-form-field appearance="outline" class="filter-panel__select">
+        <mat-select formControlName="embeddingModel" placeholder="Any">
+          <mat-option [value]="null">Any</mat-option>
+          @for (model of embeddingModels(); track model.id) {
+            <mat-option [value]="model.id">{{ model.name }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </div>
+  </form>
+
+  <div class="filter-panel__footer">
+    <button mat-button (click)="onReset()" [disabled]="!hasActiveFilters">Reset filters</button>
+    <button mat-flat-button class="filter-panel__apply-btn" (click)="onApply()">Apply</button>
+  </div>
+</div>

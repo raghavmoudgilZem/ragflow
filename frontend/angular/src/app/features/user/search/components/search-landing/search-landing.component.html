@@ -1,0 +1,35 @@
+<div class="landing-page-wrapper">
+  <button class="gear-settings-btn" (click)="toggleSettings.emit()" title="Search Settings">
+    <mat-icon>settings</mat-icon>
+  </button>
+
+  <div class="center-content">
+    <div class="brand-title">
+      <span class="logo-text">RAGFlow</span>
+      <div class="logo-icon-badge">
+        <mat-icon>near_me</mat-icon>
+      </div>
+    </div>
+
+    <div class="hero-card">
+      <div class="greeting-box">
+        <span class="hand-wave">👋</span>
+        <span class="greeting-text">Hi there</span>
+      </div>
+
+      <p class="user-subtitle">Welcome back, {{ userName }}</p>
+
+      <div class="search-input-wrapper">
+        <input
+          type="text"
+          placeholder="How can I help you today ?"
+          [(ngModel)]="query"
+          (keyup.enter)="onSearch()"
+        />
+        <button class="search-submit-btn" (click)="onSearch()">
+          <mat-icon>search</mat-icon>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

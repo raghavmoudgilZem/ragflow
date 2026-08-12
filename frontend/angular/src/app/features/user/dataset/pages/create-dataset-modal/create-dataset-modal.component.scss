@@ -1,0 +1,266 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// Variables
+// ─────────────────────────────────────────────────────────────────────────────
+
+$color-required: #d32f2f;
+$color-hint: #757575;
+$color-border: #e0e0e0;
+$color-error-bg: #fff5f5;
+$color-error-text: #c62828;
+$font-family-base: 'Inter', 'Roboto', sans-serif;
+$border-radius-base: 8px;
+$modal-width: 480px;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Modal shell
+// ─────────────────────────────────────────────────────────────────────────────
+
+.dataset-modal {
+  width: 100%;
+  max-width: 100%;
+  font-family: $font-family-base;
+  display: flex;
+  flex-direction: column;
+
+  // ── Header ──────────────────────────────────────────────────────────────
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  &__title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+    letter-spacing: -0.2px;
+  }
+
+  &__close {
+    color: var(--text-secondary);
+    transition: color 0.15s ease;
+
+    &:hover {
+      color: var(--text-primary);
+    }
+  }
+
+  // ── Body ────────────────────────────────────────────────────────────────
+  &__body {
+    padding: 20px 24px !important;
+    overflow: visible !important;
+    box-sizing: border-box;
+    width: 100%;
+  }
+
+  // ── Footer ──────────────────────────────────────────────────────────────
+  &__footer {
+    padding: 12px 24px !important;
+    border-top: 1px solid var(--border-color);
+    margin: 0 !important;
+  }
+
+  &__save-btn {
+    min-width: 90px;
+    height: 38px;
+    background-color: var(--text-primary) !important;
+    color: var(--bg-surface) !important;
+    font-weight: 600;
+    font-size: 14px;
+    border-radius: $border-radius-base !important;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    &:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+  }
+
+  &__spinner {
+    ::ng-deep circle {
+      stroke: var(--bg-surface) !important;
+    }
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Form layout
+// ─────────────────────────────────────────────────────────────────────────────
+
+.dataset-form {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  box-sizing: border-box;
+
+  &__field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 16px;
+    width: 100%;
+    box-sizing: border-box;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  &__label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+
+    &--required::before {
+      content: '*';
+      color: $color-required;
+      font-size: 14px;
+      line-height: 1;
+      margin-right: 2px;
+    }
+  }
+
+  &__hint-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    color: $color-hint;
+    cursor: help;
+  }
+
+  // NOTE: Dark-mode text/border/placeholder overrides for inputs & selects
+  // (input text color, select value color, border color, placeholder color,
+  // focus overlay, etc.) now live globally in styles.scss under [theme='dark'],
+  // since the exact same overrides were needed in rename-dataset-modal too.
+  // Only keep properties here that are genuinely specific to this modal.
+  &__control {
+    width: 100%;
+    box-sizing: border-box;
+
+    ::ng-deep .mat-mdc-text-field-wrapper {
+      border-radius: $border-radius-base;
+    }
+
+    ::ng-deep .mat-mdc-form-field-subscript-wrapper {
+      height: auto;
+    }
+  }
+
+  &__radio-group {
+    display: flex;
+    flex-direction: row;
+    gap: 32px;
+    padding: 4px 0;
+    width: 100%;
+
+    // Fix radio button label color for dark mode
+    ::ng-deep .mdc-label {
+      color: var(--text-primary) !important;
+    }
+
+    // Fix radio button outer ring color
+    ::ng-deep .mdc-radio__outer-circle {
+      border-color: var(--text-secondary) !important;
+    }
+  }
+
+  &__error-state {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: $color-error-bg;
+    color: $color-error-text;
+    font-size: 13px;
+    padding: 10px 14px;
+    border-radius: $border-radius-base;
+    border: 1px solid lighten($color-error-text, 40%);
+    width: 100%;
+    box-sizing: border-box;
+
+    mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+    }
+  }
+
+  &__external-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    margin-left: auto;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-primary);
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  &__external-icon {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Chunking method inline search
+// ─────────────────────────────────────────────────────────────────────────────
+
+.chunking-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--border-color);
+
+  &__icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    color: $color-hint;
+    flex-shrink: 0;
+  }
+
+  &__input {
+    border: none;
+    outline: none;
+    width: 100%;
+    font-size: 14px;
+    color: var(--text-primary);
+    background: transparent;
+    font-family: $font-family-base;
+
+    &::placeholder {
+      color: $color-hint;
+    }
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Embedding model option row
+// ─────────────────────────────────────────────────────────────────────────────
+
+.model-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  &__icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    color: $color-hint;
+  }
+}

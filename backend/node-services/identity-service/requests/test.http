@@ -1,0 +1,57 @@
+
+
+
+
+@authToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkNGNiNjY4OS01OGExLTRhNGMtYThiNi1mODM3NDBmZTdjZjIiLCJlbWFpbCI6ImZyZXNoX2FkbWluQGV4YW1wbGUuY29tIiwiYWN0aXZlVGVuYW50SWQiOm51bGwsInJvbGUiOm51bGwsImlhdCI6MTc4NDcxNDA5NCwiZXhwIjoxNzg0NzE3Njk0fQ.2pY6rndVVO1FOaGqzHEDOH-fCJC1qyN73rRtOA7RwVY
+@tenantId = db952ab4-98df-4e9e-b448-4392a07043d6
+@memberUserId = f9a7552f-7b6f-41ae-8afe-0c1831020c5c
+
+
+### 1. Login Request (Capture your screenshot here!)
+POST http://127.0.0.1:3000/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "email": "fresh_admin@example.com",
+  "password": "SuperSecretPassword123"
+}
+
+### 1. Create Tenant (User becomes Tenant Owner/Admin)
+POST http://127.0.0.1:3000/api/v1/tenants
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "name": "Zem Corp",
+  "slug": "zem-corp"
+}
+### 1.5 Register the Member User
+POST http://127.0.0.1:3000/api/v1/auth/register
+Content-Type: application/json
+
+{
+  "email": "member_user@example.com",
+  "password": "SuperSecretPassword123"
+}
+### 2. Add Member to Tenant
+POST http://127.0.0.1:3000/api/v1/tenants/{{tenantId}}/users
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "email": "member_user@example.com",
+  "role": "MEMBER"
+}
+
+### 3. Update User Role (Promote to ADMIN)
+PATCH http://127.0.0.1:3000/api/v1/tenants/{{tenantId}}/users/{{memberUserId}}/role
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "role": "ADMIN"
+}
+
+### 4. Remove User from Tenant
+DELETE http://127.0.0.1:3000/api/v1/tenants/{{tenantId}}/users/{{memberUserId}}
+Authorization: Bearer {{authToken}}

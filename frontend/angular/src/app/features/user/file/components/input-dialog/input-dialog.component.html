@@ -1,0 +1,16 @@
+<h2 mat-dialog-title>{{ title }}</h2>
+<mat-dialog-content>
+  <mat-form-field appearance="outline" class="full-width" subscriptSizing="dynamic">
+    <mat-label>Name</mat-label>
+    <input matInput [(ngModel)]="fileName" placeholder="Please input name" />
+  </mat-form-field>
+  @if (helperText) {
+    <div class="helper-text">{{ helperText }}</div>
+  }
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()" class="cancel-btn">Cancel</button>
+  <button mat-flat-button class="save-btn" (click)="onSave()" [disabled]="!fileName.trim()">
+    Save
+  </button>
+</mat-dialog-actions>

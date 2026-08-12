@@ -1,0 +1,23 @@
+<app-card
+  [data]="cardData()"
+  [menuActions]="menuActions"
+  (cardClick)="onCardClick($event)"
+  (menuAction)="onMenuAction($event)"
+>
+  @if (isDataflowCanvas()) {
+    <button titleIcon mat-icon-button class="canvas-icon" [attr.aria-label]="'Dataflow canvas'">
+      <mat-icon>route</mat-icon>
+    </button>
+  }
+
+  <div footer class="footer-row">
+    <span class="timestamp">
+      {{ agent().update_time | dateFormat }}
+    </span>
+    @if (shouldShowOwnerBadge()) {
+      <span class="owner-badge">
+        {{ agent().nickname }}
+      </span>
+    }
+  </div>
+</app-card>

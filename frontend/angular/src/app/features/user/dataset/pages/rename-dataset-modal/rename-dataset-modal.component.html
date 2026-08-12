@@ -1,0 +1,41 @@
+<h2 mat-dialog-title>Rename Dataset</h2>
+
+<mat-dialog-content>
+  <mat-form-field appearance="outline" class="rename-field">
+    <mat-label>Dataset name</mat-label>
+    <input
+      #nameInput
+      matInput
+      [formControl]="nameControl"
+      maxlength="100"
+      (keydown.enter)="onSave()"
+    />
+
+    @if (nameControl.hasError('required') && nameControl.touched) {
+      <mat-error>Dataset name is required</mat-error>
+    } @else if (nameControl.hasError('minlength') && nameControl.touched) {
+      <mat-error>Dataset name must be at least 3 characters</mat-error>
+    } @else if (nameControl.hasError('serverError')) {
+      <mat-error>{{ serverError() }}</mat-error>
+    }
+
+    @if (isSameName() && nameControl.valid) {
+      <mat-hint class="rename-field__same-name-hint">
+        Enter a different name to rename this dataset
+      </mat-hint>
+    }
+  </mat-form-field>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()" [disabled]="isSubmitting()">Cancel</button>
+  <button
+    mat-flat-button
+    class="rename-save-btn"
+    color="primary"
+    (click)="onSave()"
+    [disabled]="!canSave"
+  >
+    {{ isSubmitting() ? 'Saving...' : 'Save' }}
+  </button>
+</mat-dialog-actions>

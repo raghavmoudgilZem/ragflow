@@ -1,0 +1,396 @@
+@use '@angular/material' as mat;
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+html {
+  height: 100%;
+  @include mat.theme(
+    (
+      color: (
+        primary: mat.$azure-palette,
+        tertiary: mat.$blue-palette,
+      ),
+      typography: Inter,
+      density: 0,
+    )
+  );
+}
+
+:root {
+  --app-primary: #1f6feb;
+  --primary-color: #00beb4;
+  --app-teal: #00beb4;
+
+  // Background colors
+  --bg-body: #f9fafb;
+  --bg-surface: #ffffff;
+  --bg-base: #ffffff;
+  --bg-secondary: #f5f5f5;
+
+  // Border colors
+  --border-color: #e5e7eb;
+  --border-hover: rgba(0, 0, 0, 0.24);
+
+  // Text colors
+  --text-main: #010409;
+  --text-primary: #1a1a1a;
+  --text-secondary: #666666;
+  --text-badge: #999999;
+
+  // Table colors
+  --table-bg: #ffffff;
+  --table-header-bg: #f5f5f5;
+  --table-header-text: #333333;
+  --table-cell-text: #1a1a1a;
+  --table-border: rgba(0, 0, 0, 0.12);
+  --table-row-border: rgba(0, 0, 0, 0.08);
+
+  // Status colors
+  --status-success: #4caf50;
+  --status-error: #f44336;
+  --status-warning: #ff9800;
+  --status-info: #2196f3;
+
+  // Input colors
+  --input-fill-color: #e6edf3;
+  --input-text-color: #0d1117;
+  --btn-disabled: #2a2e35;
+  --error-color: #f85149;
+  --danger-color: #ef4444;
+
+  // Card colors
+  --app-card-bg: #ffffff;
+  --app-color-border: #e5e7eb;
+  --bg-card: #ffffff;
+  --bg-hover: #f5f5f5;
+  --bg-menu: #ffffff;
+
+  // Text colors (additional)
+  --text-tertiary: #9ca3af;
+  --text-on-gradient: #1a1a1a;
+
+  // Shadow colors
+  --shadow-sm: rgba(0, 0, 0, 0.05);
+  --shadow-md: rgba(0, 0, 0, 0.1);
+  --shadow-lg: rgba(0, 0, 0, 0.15);
+
+  // Badge and accent colors
+  --badge-bg: #f3f4f6;
+  --accent-primary: #667eea;
+  --accent-secondary: #764ba2;
+  --focus-ring: rgba(102, 126, 234, 0.4);
+
+  // Spacing scale
+  --spacing-xs: 8px;
+  --spacing-sm: 12px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-2xl: 48px;
+
+  // Font sizes
+  --font-size-xs: 11px;
+  --font-size-sm: 14px;
+  --font-size-base: 16px;
+  --font-size-lg: 18px;
+  --font-size-xl: 20px;
+  --font-size-2xl: 28px;
+
+  // Border radius
+  --border-radius-sm: 4px;
+  --border-radius-md: 8px;
+  --border-radius-lg: 12px;
+
+  // Icon sizes
+  --icon-size-sm: 16px;
+  --icon-size-md: 20px;
+  --icon-size-lg: 32px;
+  --icon-size-xl: 48px;
+  --icon-size-2xl: 72px;
+
+  // Layout
+  --container-max-width: 1400px;
+  --avatar-size: 40px;
+  --grid-min-card-width: 320px;
+  --grid-gap: 20px;
+  --grid-gap-mobile: 16px;
+
+  // Animation
+  --transition-duration: 0.2s;
+  --transition-timing: ease-in-out;
+  --hover-transform: translateY(-2px);
+
+  // Component-specific
+  --loading-min-height: 400px;
+  --empty-state-min-height: 400px;
+
+  // Page Header (shared across list pages)
+  --page-header-padding: 24px 0 20px 0;
+  --page-header-padding-mobile: 16px;
+  --page-header-margin-bottom: 0;
+  --page-header-gap: 6px;
+  --page-title-font-size: 24px;
+  --page-title-font-size-mobile: 18px;
+  --page-title-font-weight: 600;
+  --page-title-line-height: 1.2;
+  --page-title-gap: 12px;
+  --page-title-icon-size: 28px;
+  --page-title-icon-size-mobile: 24px;
+  --page-subtitle-font-size: 14px;
+  --page-subtitle-font-size-mobile: 12px;
+  --page-subtitle-line-height: 1.5;
+}
+
+[theme='dark'] {
+  // Background colors
+  --bg-body: #0d1117;
+  --bg-surface: #161b22;
+  --bg-base: #0b0a12;
+  --bg-secondary: #202025;
+
+  // Border colors
+  --border-color: rgba(255, 255, 255, 0.15);
+  --border-hover: rgba(255, 255, 255, 0.3);
+
+  // Text colors
+  --text-main: #f0f6fc;
+  --text-primary: #f6f6f7;
+  --text-secondary: rgba(178, 181, 183, 1);
+  --text-badge: rgba(151, 154, 171, 1);
+
+  // Table colors
+  --table-bg: #1a1a1f;
+  --table-header-bg: rgba(255, 255, 255, 0.03);
+  --table-header-text: #f6f6f7;
+  --table-cell-text: #f6f6f7;
+  --table-border: rgba(255, 255, 255, 0.1);
+  --table-row-border: rgba(255, 255, 255, 0.05);
+
+  // Status colors remain the same
+  --status-success: #4caf50;
+  --status-error: #f44336;
+  --status-warning: #ff9800;
+  --status-info: #2196f3;
+  --danger-color: #ef4444;
+
+  // Card colors
+  --app-card-bg: #1a1a1f;
+  --app-color-border: rgba(255, 255, 255, 0.1);
+  --bg-card: #1a1a1f;
+  --bg-hover: #2a2a2f;
+  --bg-menu: #202025;
+
+  // Text colors (additional)
+  --text-tertiary: #71717a;
+  --text-on-gradient: #fafafa;
+
+  // Shadow colors
+  --shadow-sm: rgba(0, 0, 0, 0.2);
+  --shadow-md: rgba(0, 0, 0, 0.3);
+  --shadow-lg: rgba(0, 0, 0, 0.4);
+
+  // Badge and accent colors
+  --badge-bg: #2a2a2f;
+  --accent-primary: #667eea;
+  --accent-secondary: #764ba2;
+  --focus-ring: rgba(102, 126, 234, 0.4);
+
+  // Spacing scale (same as light mode)
+  --spacing-xs: 8px;
+  --spacing-sm: 12px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-2xl: 48px;
+
+  // Font sizes (same as light mode)
+  --font-size-xs: 11px;
+  --font-size-sm: 14px;
+  --font-size-base: 16px;
+  --font-size-lg: 18px;
+  --font-size-xl: 20px;
+  --font-size-2xl: 28px;
+
+  // Border radius (same as light mode)
+  --border-radius-sm: 4px;
+  --border-radius-md: 8px;
+  --border-radius-lg: 12px;
+
+  // Icon sizes (same as light mode)
+  --icon-size-sm: 16px;
+  --icon-size-md: 20px;
+  --icon-size-lg: 32px;
+  --icon-size-xl: 48px;
+  --icon-size-2xl: 72px;
+
+  // Layout (same as light mode)
+  --container-max-width: 1400px;
+  --avatar-size: 40px;
+  --grid-min-card-width: 320px;
+  --grid-gap: 20px;
+  --grid-gap-mobile: 16px;
+
+  // Animation (same as light mode)
+  --transition-duration: 0.2s;
+  --transition-timing: ease-in-out;
+  --hover-transform: translateY(-2px);
+
+  // Component-specific (same as light mode)
+  --loading-min-height: 400px;
+  --empty-state-min-height: 400px;
+
+  // ── Global Material form field & dialog title fixes ────────────────────
+  // Material's MDC components don't automatically pick up our CSS variables,
+  // so every input/select/dialog-title needs an explicit override. Kept here
+  // (once, globally) instead of duplicated in every modal's component SCSS.
+
+  .mat-mdc-dialog-title,
+  .mat-mdc-dialog-container .mdc-dialog__title {
+    color: var(--text-primary) !important;
+  }
+
+  .mat-mdc-form-field {
+    input.mat-mdc-input-element,
+    textarea.mat-mdc-input-element {
+      color: var(--text-primary) !important;
+      caret-color: var(--text-primary) !important;
+    }
+
+    .mat-mdc-select-value-text,
+    .mat-mdc-select-placeholder {
+      color: var(--text-primary) !important;
+    }
+
+    .mat-mdc-select-arrow {
+      color: var(--text-secondary) !important;
+    }
+
+    .mat-mdc-text-field-wrapper {
+      background-color: transparent !important;
+    }
+
+    .mdc-notched-outline__leading,
+    .mdc-notched-outline__notch,
+    .mdc-notched-outline__trailing {
+      border-color: var(--border-color) !important;
+    }
+
+    .mat-mdc-form-field-focus-overlay {
+      background-color: transparent;
+    }
+
+    input::placeholder {
+      color: var(--text-secondary) !important;
+      opacity: 1;
+    }
+  }
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  margin: 0;
+  padding: 0;
+  height: 100%;
+
+  background-color: var(--bg-body);
+  color: var(--text-main);
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
+}
+
+.error-snackbar {
+  --mdc-snackbar-container-color: var(--error-color);
+  --mdc-snackbar-label-text-color: #ffffff;
+  .mat-mdc-snack-bar-label {
+    font-weight: 500;
+  }
+}
+
+.mat-mdc-menu-panel.dark-filter-menu {
+  background-color: #1a1a1a;
+  border: 1px solid var(--app-color-border);
+  border-radius: 8px;
+
+  .filter-content {
+    padding: 10px;
+    min-width: 250px;
+
+    .filter-header {
+      color: var(--color-white);
+      margin: 10px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .vertical-radio-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .mat-mdc-radio-button {
+      .mdc-label {
+        color: var(--color-white);
+        font-size: 13px;
+      }
+    }
+
+    .menu-footer {
+      display: flex;
+      justify-content: flex-end;
+
+      .reset-btn {
+        color: #8c8c8c;
+        font-size: 14px;
+      }
+    }
+  }
+}
+
+// ── Dataset dialog panel overrides ───────────────────────────────────────────
+// mat-dialog-content applies max-height and overflow at the CDK level
+// which component-level SCSS cannot override. Must live in global styles.
+// Shared across all dataset-related dialogs (Create, Rename, ...).
+.dataset-dialog-panel,
+.rename-dataset-dialog-panel {
+  .mat-mdc-dialog-container {
+    .mdc-dialog__surface {
+      background-color: var(--bg-surface) !important;
+      border-radius: 12px !important;
+    }
+  }
+  .mat-mdc-dialog-actions {
+    padding: 12px 24px !important;
+    min-height: unset !important;
+  }
+  .mat-mdc-select-panel {
+    background-color: var(--bg-surface) !important;
+    .mat-mdc-option {
+      color: var(--text-primary) !important;
+      &:hover,
+      &.mat-mdc-option-active {
+        background-color: var(--bg-hover) !important;
+      }
+      &.mdc-list-item--selected {
+        color: var(--text-primary) !important;
+      }
+    }
+  }
+}
+
+// ── Panel-specific content padding ───────────────────────────────────────────
+// Create Dataset Modal manages its own internal spacing (multi-field form),
+// so it strips Material's default padding entirely.
+.dataset-dialog-panel .mat-mdc-dialog-content {
+  max-height: none !important;
+  overflow: visible !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+// Rename modal is a single field — keep Material's roomier default spacing,
+// just tuned slightly.
+.rename-dataset-dialog-panel .mat-mdc-dialog-content {
+  padding: 8px 24px 16px !important;
+}

@@ -1,0 +1,107 @@
+<div class="active-search-page">
+  <header class="active-header">
+    <div class="brand-logo" (click)="resetSearch.emit()" title="Back to search landing">
+      <span class="logo-text">RAGFlow</span>
+      <div class="logo-icon-badge">
+        <mat-icon>near_me</mat-icon>
+      </div>
+    </div>
+
+    <div class="header-center">
+      <div class="center-search-box">
+        <input
+          type="text"
+          [(ngModel)]="query"
+          placeholder="Search"
+          (keyup.enter)="onSearch()"
+        />
+        @if (query) {
+          <button class="clear-btn" (click)="clearSearch()" title="Clear">
+            <mat-icon>close</mat-icon>
+          </button>
+        }
+        <button class="search-btn" (click)="onSearch()" title="Search">
+          <mat-icon>search</mat-icon>
+        </button>
+      </div>
+    </div>
+
+    <button class="gear-settings-btn" (click)="toggleSettings.emit()" title="Search Settings">
+      <mat-icon>settings</mat-icon>
+    </button>
+  </header>
+
+  <div class="main-content-column">
+    <div class="filter-toolbar">
+      <div class="file-filter-badge">
+        <mat-icon class="file-icon">insert_drive_file</mat-icon>
+        <span>0/{{ docCount }} Files</span>
+        <button class="badge-close-btn">
+          <mat-icon>close</mat-icon>
+        </button>
+        <mat-icon class="arrow-down">keyboard_arrow_down</mat-icon>
+      </div>
+    </div>
+
+    <div class="chunks-scroll-area">
+      @if (isSearching) {
+        <div class="loading-state">
+          <mat-icon class="spinner">sync</mat-icon>
+          <span>Searching documents...</span>
+        </div>
+      } @else {
+        <div class="chunks-container">
+          @for (chunk of results; track chunk.chunk_id) {
+            <div class="chunk-item-card">
+              @if (chunk.image_id) {
+                <div class="chunk-thumbnail">
+                  <img
+                    [src]="getImageUrl(chunk.image_id)"
+                    alt="Chunk preview"
+                    (error)="$any($event.target).style.display = 'none'"
+                  />
+                </div>
+              }
+
+              <div class="chunk-body" [innerHTML]="chunk.content_with_weight"></div>
+
+              @if (chunk.docnm_kwd) {
+                <div class="pdf-doc-badge">
+                  <mat-icon class="pdf-icon">picture_as_pdf</mat-icon>
+                  <span class="doc-name">{{ chunk.docnm_kwd }}</span>
+                </div>
+              }
+
+              @if (showMetadata) {
+                <div class="chunk-meta-footer">
+                  <span class="meta-tag">Similarity: {{ chunk.similarity | number:'1.2-2' }}</span>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    <footer class="pagination-footer">
+      <span class="total-label">Total {{ totalChunks }}</span>
+
+      <div class="pagination-controls">
+        <button class="page-nav-btn" [disabled]="currentPage() === 1">
+          <mat-icon>chevron_left</mat-icon>
+        </button>
+        <span class="current-page-badge">{{ currentPage() }}</span>
+        <button class="page-nav-btn">
+          <mat-icon>chevron_right</mat-icon>
+        </button>
+      </div>
+
+      <div class="page-size-selector">
+        <mat-select [value]="pageSize()" class="compact-select">
+          <mat-option [value]="50">50 / Page</mat-option>
+          <mat-option [value]="100">100 / Page</mat-option>
+        </mat-select>
+      </div>
+    </footer>
+  </div>
+</div>

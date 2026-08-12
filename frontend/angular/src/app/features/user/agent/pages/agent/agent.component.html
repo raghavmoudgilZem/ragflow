@@ -1,0 +1,56 @@
+<div class="agent-page">
+  <!-- Header Section -->
+  <div class="page-header">
+    <div class="header-content">
+      <h1 class="page-title">
+        <mat-icon class="title-icon">psychology</mat-icon>
+        Agents
+      </h1>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  @if (isLoading()) {
+    <div class="loading-container">
+      <mat-progress-spinner mode="indeterminate" [diameter]="48"></mat-progress-spinner>
+      <p class="loading-text">Loading agents...</p>
+    </div>
+  }
+
+  @if (agents$ | async; as agents) {
+    <!-- Only display data when not loading and no error -->
+    @if (!isLoading() && !errorMessage()) {
+      <!-- Empty State -->
+      @if (agents.length === 0) {
+        <div class="empty-state">
+          <mat-icon class="empty-icon">psychology</mat-icon>
+          <h3>No agents yet</h3>
+          <p>Create your first AI agent to get started</p>
+        </div>
+      }
+
+      <!-- Agent Cards Grid -->
+      @if (agents.length > 0) {
+        <div class="agents-grid">
+          @for (agent of agents; track agent.id) {
+            <app-agent-card
+              [agent]="agent"
+              (cardClick)="onCardClick($event)"
+              (rename)="onRenameAgent($event)"
+              (delete)="onDeleteAgent($event)"
+            ></app-agent-card>
+          }
+        </div>
+      }
+    }
+  }
+
+  <!-- Error State -->
+  @if (!isLoading() && errorMessage()) {
+    <div class="empty-state">
+      <mat-icon class="empty-icon">error_outline</mat-icon>
+      <h3>Error Loading Agents</h3>
+      <p>{{ errorMessage() }}</p>
+    </div>
+  }
+</div>

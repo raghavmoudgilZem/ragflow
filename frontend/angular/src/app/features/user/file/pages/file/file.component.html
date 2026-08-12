@@ -1,0 +1,202 @@
+<app-list-page-layout
+  [title]="breadcrumbs().length > 0 ? '' : 'Files'"
+  subtitle="Please wait for your files to finish parsing before starting an AI-powered chat."
+  [selectedCount]="selectedCount()"
+  [bulkActions]="bulkActions"
+  [filterConfig]="filterConfig"
+  [appliedFilters]="appliedFilters()"
+  [isEmpty]="isEmpty()"
+  emptyMessage="No files found."
+  (filtersApplied)="onFiltersApplied($event)"
+>
+  <!-- TODO: Filter functionality - Visible as placeholder, full implementation pending -->
+  <!-- Breadcrumb Navigation -->
+  @if (breadcrumbs().length > 0) {
+    <nav breadcrumb class="breadcrumb-nav" aria-label="Folder navigation">
+      <mat-icon class="breadcrumb-folder-icon">folder</mat-icon>
+      @for (crumb of breadcrumbs(); track crumb.id; let isLast = $last; let isFirst = $first) {
+        @if (!isFirst) {
+          <mat-icon class="breadcrumb-separator" aria-hidden="true">chevron_right</mat-icon>
+        }
+        @if (isLast) {
+          <span class="breadcrumb-item active" aria-current="page">
+            {{ crumb.name }}
+          </span>
+        } @else {
+          <button
+            class="breadcrumb-item clickable"
+            (click)="navigateToBreadcrumb(crumb)"
+            [attr.aria-label]="'Navigate to ' + crumb.name"
+          >
+            {{ crumb.name }}
+          </button>
+        }
+      }
+    </nav>
+  }
+
+  <!-- TODO: File Upload - Dummy placeholder, functionality to be implemented later -->
+  <button actions mat-flat-button class="add-file-btn" [matMenuTriggerFor]="addFileMenu">
+    <mat-icon>upload</mat-icon>
+    Add file
+  </button>
+
+  <mat-menu #addFileMenu="matMenu">
+    <button mat-menu-item (click)="showUploadPlaceholder()">
+      <mat-icon>upload_file</mat-icon>
+      <span>Upload file</span>
+    </button>
+    <button mat-menu-item (click)="showUploadPlaceholder()">
+      <mat-icon>note_add</mat-icon>
+      <span>Create empty file</span>
+    </button>
+    <button mat-menu-item (click)="openCreateFolderDialog()">
+      <mat-icon>create_new_folder</mat-icon>
+      <span>New folder</span>
+    </button>
+  </mat-menu>
+
+  <!-- Table using reusable component -->
+  <app-table
+    [data]="paginatedFiles()"
+    [columns]="tableColumns"
+    [selectable]="true"
+    [sortable]="true"
+    [selectedRows]="selectedRowIds()"
+    [sortField]="sortField()"
+    [sortDirection]="sortDirection()"
+    [totalItems]="totalItems()"
+    [pageSize]="pageSize()"
+    (rowSelectionChange)="onRowSelectionChange($event)"
+    (allSelectionChange)="onAllSelectionChange($event)"
+    (sortChange)="onSortChange($event)"
+    (paginationEvent)="onPageChange($event)"
+  >
+    <!-- Custom template for name column -->
+    <ng-template #nameCell let-file>
+      <div class="file-name" [class.folder-row]="isFolder(file)">
+        @if (isFolder(file)) {
+          <button
+            class="folder-container"
+            (click)="navigateToFolder(file.id)"
+            [matTooltip]="'Click to open folder'"
+          >
+            @if (getFileIcon(file); as iconData) {
+              <mat-icon class="file-icon" [ngClass]="iconData.class">{{ iconData.icon }}</mat-icon>
+            }
+            <span class="file-name-text">{{ file.name }}</span>
+            <mat-icon class="folder-arrow">arrow_forward</mat-icon>
+          </button>
+        } @else {
+          @if (getFileIcon(file); as iconData) {
+            <mat-icon class="file-icon" [ngClass]="iconData.class">{{ iconData.icon }}</mat-icon>
+          }
+          <span class="file-name-text">{{ file.name }}</span>
+        }
+      </div>
+    </ng-template>
+
+    <!-- Custom template for size column -->
+    <ng-template #sizeCell let-file>
+      {{ file.sizeInBytes | fileSize }}
+    </ng-template>
+
+    <!-- Custom template for action column -->
+    <ng-template #actionCell let-file>
+      @if (!isFolder(file)) {
+        <div class="action-btns">
+          <button
+            mat-icon-button
+            class="action-icon-btn"
+            (click)="openLinkToDatasetDialog(file)"
+            title="Link to dataset"
+          >
+            <mat-icon>link</mat-icon>
+          </button>
+          <button
+            mat-icon-button
+            class="action-icon-btn"
+            (click)="openMoveFileDialog(file)"
+            title="Move"
+          >
+            <mat-icon>drive_file_move</mat-icon>
+          </button>
+          <button
+            mat-icon-button
+            class="action-icon-btn"
+            (click)="openRenameDialog(file)"
+            title="Rename"
+          >
+            <mat-icon>edit</mat-icon>
+          </button>
+          <button
+            mat-icon-button
+            class="action-icon-btn"
+            (click)="viewFile(file)"
+            title="View file"
+          >
+            <mat-icon>visibility</mat-icon>
+          </button>
+          <button
+            mat-icon-button
+            class="action-icon-btn"
+            (click)="downloadFile(file)"
+            title="Download"
+          >
+            <mat-icon>download</mat-icon>
+          </button>
+          <button
+            mat-icon-button
+            class="action-icon-btn"
+            [matMenuTriggerFor]="metadataMenu"
+            (click)="setCurrentFile(file)"
+            title="View metadata"
+          >
+            <mat-icon>info</mat-icon>
+          </button>
+          <button
+            mat-icon-button
+            class="action-icon-btn danger"
+            (click)="openDeleteConfirmation(file)"
+            title="Delete"
+          >
+            <mat-icon>delete</mat-icon>
+          </button>
+        </div>
+      }
+    </ng-template>
+  </app-table>
+
+  <!-- Metadata Popover Menu -->
+  <mat-menu #metadataMenu="matMenu" class="metadata-menu">
+    <section
+      class="metadata-content"
+      (click)="$event.stopPropagation()"
+      (keydown)="$event.stopPropagation()"
+      aria-label="File metadata"
+    >
+      @if (currentFile()) {
+        <div class="metadata-item">
+          <span class="metadata-label">create_time:</span>
+          <span class="metadata-value">{{ currentFile()?.uploadDate }}</span>
+        </div>
+        <div class="metadata-item">
+          <span class="metadata-label">name:</span>
+          <span class="metadata-value">{{ currentFile()?.name }}</span>
+        </div>
+        <div class="metadata-item">
+          <span class="metadata-label">size:</span>
+          <span class="metadata-value">{{ currentFile()?.sizeInBytes | fileSize }}</span>
+        </div>
+        <div class="metadata-item">
+          <span class="metadata-label">type:</span>
+          <span class="metadata-value">{{ currentFile()?.fileType }}</span>
+        </div>
+        <div class="metadata-item">
+          <span class="metadata-label">update_time:</span>
+          <span class="metadata-value">{{ currentFile()?.uploadDate }}</span>
+        </div>
+      }
+    </section>
+  </mat-menu>
+</app-list-page-layout>

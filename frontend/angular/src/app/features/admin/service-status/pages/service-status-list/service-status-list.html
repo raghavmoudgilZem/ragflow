@@ -1,0 +1,9 @@
+<app-admin-toolbar 
+  [title]="'Service status'" 
+  [filterConfig]="toolbarConfig"
+  (filterChanged)="handleFilterUpdate($event)">
+</app-admin-toolbar>
+
+<app-table [data]="serviceData" [columns]="columnConfig" [totalItems]="totalItems"
+    [pageSize]="pageSize"
+    (paginationEvent)="handlePagination($event)"> </app-table>

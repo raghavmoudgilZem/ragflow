@@ -1,0 +1,642 @@
+include:
+  - ./docker-compose-base.yml
+
+services:
+  # ==========================================
+  # MICROSERVICES
+  # ==========================================
+
+  # 1. Identity Service (NestJS) - Port 3001
+  identity-service:
+    image: docker-identity-service:latest
+    build:
+      context: ../backend/node-services/identity-service
+      dockerfile: Dockerfile
+    container_name: rag-identity-service
+    restart: always
+    ports:
+      - "3010:3000"
+    volumes:
+      - ../backend/node-services/identity-service:/usr/src/app
+      - /app/node_modules 
+    command: npm run start:dev
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: "mysql://root:${MYSQL_PASSWORD}@mysql:3306/identity_db"
+      NODE_ENV: "development"
+      PORT: 3000
+      REDIS_HOST: "redis"
+      REDIS_PORT: "6379"
+      REDIS_PASSWORD: "${REDIS_PASSWORD}"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - ragflow 
+      # services:
+
+  # identity-service:
+  #   build:
+  #     context: ../backend/dotnet-services/identity-service
+  #     dockerfile: Dockerfile
+  #   container_name: rag-identity-service
+  #   restart: always
+
+  #   ports:
+  #     - "3002:3000"
+
+  #   env_file:
+  #     - .env
+
+  #   environment:
+  #     ASPNETCORE_ENVIRONMENT: Development
+  #     ASPNETCORE_URLS: http://+:3000
+  #     ConnectionStrings__MySql: "server=mysql;port=3306;database=identity_db;user=root;password=infini_rag_flow"
+  #     Redis__ConnectionString: "redis:6379,password=infini_rag_flow"
+
+  #   depends_on:
+  #     mysql:
+  #       condition: service_healthy
+  #     redis:
+  #       condition: service_healthy
+  #     rabbitmq:
+  #       condition: service_started
+  #   networks:
+  #     ragflow:
+  #       aliases:
+  #         - rag-identity-service
+  #         - identity-service
+  # 2. Admin Service (NestJS) - Port 3000
+  # admin-service:
+  #   build:
+  #     context: ../backend/admin-service # <--- Points to the subfolder!
+  #     dockerfile: Dockerfile
+  #   container_name: rag-admin-service
+  #   restart: always
+  #   ports:
+  #     - "3000:3000"
+  #   env_file:
+  #     - .env
+  #   environment:
+  #     DATABASE_URL: ${DATABASE_URL_ADMIN}
+  #     NODE_ENV: "development"
+  #     PORT: 3000
+  #   depends_on:
+  #     mysql:
+  #       condition: service_healthy
+  #     redis:
+  #       condition: service_healthy
+  #     minio:
+  #       condition: service_healthy
+  #   networks:
+  #     - ragflow
+
+  # # 2. Dataset Service (NestJs)
+  dataset-service:
+    build:
+      context: ../backend/node-services/dataset-service
+      dockerfile: Dockerfile
+    container_name: dataset-service
+    ports:
+      - "3001:3000"
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: ${DATABASE_URL_DATASET}
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    networks:
+      - ragflow
+
+  llm-gateway-service:
+    build:
+      context: ../backend/node-services/llm-gateway-service
+      dockerfile: Dockerfile
+    container_name: llm-gateway-service
+    ports:
+      - "3003:3000"
+    restart: always
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: ${DATABASE_URL_DATASET_LLM_CONFIG}
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:   
+        - ragflow   
+  # # 5. Notification Service (NestJS) - Port 3004
+  # notification-service:
+  #   build:
+  #     context: ../backend/node-services/notification-service
+  #     dockerfile: Dockerfile
+  #   container_name: rag-notification-service
+  #   restart: always
+  #   ports:
+  #     - "3004:4004"
+  #   env_file:
+  #     - .env
+  #   environment:
+  #     DATABASE_URL: ${DATABASE_URL_NOTIFICATION}
+  #     NODE_ENV: "development"
+  #     PORT: 4004
+  #   depends_on:
+  #     mysql:
+  #       condition: service_healthy
+  #   networks:
+  #     - ragflow
+
+  # 4. Search Service (Java Spring Boot)
+  search-service:
+    build:
+      context: ../backend/java-services/search-service
+      dockerfile: Dockerfile
+    container_name: search-service
+    restart: always
+    ports:
+      - "9407:9407"
+    env_file:
+      - .env
+    environment:
+      - DB_HOST=mysql
+      - DB_PASSWORD=${MYSQL_PASSWORD}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - RAG_SERVICE_URL=http://rag-service:9405
+      - CHAT_SERVICE_URL=http://chat-service:9406
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    networks:
+      - ragflow
+
+  # 5. Notification Service (NestJS) - Port 3004
+  notification-service:
+    build:
+      context: ../backend/node-services/notification-service
+      dockerfile: Dockerfile
+    container_name: rag-notification-service
+    restart: always
+    ports:
+      - "3004:4004"
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: ${DATABASE_URL_NOTIFICATION}
+      NODE_ENV: "development"
+      PORT: 4004
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - ragflow
+
+  
+  retrieval-service:
+    build:
+      context: ../backend/java-services
+      dockerfile: retrieval-service/Dockerfile
+    container_name: retrieval-service
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    environment:
+      # These tell Spring Boot to use the Docker service names instead of localhost
+      - DB_HOST=mysql
+      - DB_PASSWORD=${MYSQL_PASSWORD}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - ES_HOST=es01
+      - ES_PORT=9200
+      - ES_PASSWORD=${ELASTIC_PASSWORD}
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - ragflow
+
+  chat-service:
+    build:
+      context: ../backend/node-services/chat-service
+      dockerfile: Dockerfile
+    container_name: rag-chat-service
+    restart: always
+    ports:
+      - "3009:3009"
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: "development"
+      PORT: 3009
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - ragflow
+
+  parser-service:
+    build:
+      context: ../backend/node-services/parser-service
+      dockerfile: Dockerfile
+    container_name: rag-parser-service
+    restart: always
+    ports:
+      - "7005:7005"
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: "postgresql://${PG_USERNAME}:${PG_PASSWORD}@postgres:5432/rag_parsing?schema=public"
+      NODE_ENV: "development"
+      PORT: 7005
+      RABBIT_MQ_URL: ${RABBIT_MQ_URL}
+      RABBIT_MQ_QUEUE: "parser_service_queue"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    networks:
+      - ragflow
+
+  file-service:
+    build:
+      context: ../backend/node-services/file-service
+      dockerfile: Dockerfile
+    container_name: rag-file-service
+    restart: always
+    ports:
+      - "3010:4005"
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL_FILE: postgresql://${PG_USERNAME}:${PG_PASSWORD}@postgres:5432/rag_file_db
+      NODE_ENV: "development"
+      PORT: 4005
+      MINIO_ENDPOINT: ${MINIO_ENDPOINT}
+      MINIO_PORT: ${MINIO_PORT}
+      MINIO_USE_SSL: ${MINIO_USE_SSL}
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
+      MINIO_BUCKET: ${MINIO_BUCKET}
+      DEFAULT_STORAGE_PROVIDER: ${DEFAULT_STORAGE_PROVIDER}
+      LOCAL_STORAGE_PATH: ${LOCAL_STORAGE_PATH}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - ragflow
+
+  # 6. Admin Auth Service (.NET 10) - Port 5454
+  admin-auth-service:
+    build:
+      context: ../backend/dotnet-services/admin-service
+      dockerfile: Dockerfile
+    volumes:
+      - ../backend/shared/services.json:/app/config/services.json:ro
+
+    container_name: admin-auth-service
+    restart: always
+    ports:
+      - "5454:3000"
+    env_file:
+      - .env
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:3000
+      ConnectionStrings__DefaultConnection: ${DATABASE_URL_ADMIN_AUTH}
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      ragflow:
+        aliases:
+          - admin-auth-service
+
+
+  # retrieval-service:
+  #   build:
+  #     context: ../backend/java-services/retrieval-service
+  #     dockerfile: Dockerfile
+  #   container_name: retrieval-service
+  #   ports:
+  #     - "8080:8080"
+  #   env_file:
+  #     - .env
+  #   environment:
+  #     - DB_HOST=mysql
+  #     - DB_PASSWORD=${MYSQL_PASSWORD}
+  #     - REDIS_HOST=redis
+  #     - REDIS_PASSWORD=${REDIS_PASSWORD}
+  #   depends_on:
+  #     mysql:
+  #       condition: service_healthy
+  #     redis:
+  #       condition: service_healthy
+  #   networks:
+  #     - ragflow
+  knowledgebase-service:
+    build:
+      context: ../backend/dotnet-services/knowledgebase-service
+      dockerfile: Dockerfile
+    container_name: rag-knowledgebase-service
+    restart: always
+
+    ports:
+      - "5008:8080"
+
+    env_file:
+      - .env
+
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__KnowledgeBaseDb: "server=mysql;port=3306;database=knowledgebase_db;user=root;password=infini_rag_flow"
+     
+
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_started
+    networks:
+      - ragflow
+
+  api-gateway:
+    build:
+      context: ../backend/api-gateway
+      dockerfile: Dockerfile
+    volumes:
+      - ../backend/shared/services.json:/app/config/services.json:ro
+    env_file:
+      - .env
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    ports:
+      - "8000:8080"
+    networks:
+      - ragflow
+    depends_on:
+      - identity-service
+      - knowledgebase-service
+
+
+  dataset-service-java:
+    build:
+      context: ../backend/java-services
+      dockerfile: dataset-service/Dockerfile
+
+    container_name: dataset-service-java
+
+    restart: always
+
+    ports:
+      - "8083:8083"
+
+    env_file:
+      - .env
+
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_DATASET_DBNAME: ${MYSQL_DATASET_DBNAME}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+    networks:
+      - ragflow
+  file-service-java:
+    build:
+      context: ../backend/java-services
+      dockerfile: file-service/Dockerfile
+
+    container_name: file-service-java
+
+    restart: always
+
+    ports:
+      - "8084:8084"
+
+    env_file:
+      - .env
+
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_DATASET_DBNAME: ${MYSQL_FILESYSTEM_DBNAME}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+    networks:
+      - ragflow
+
+  llm-gateway-service-java:
+    build:
+      context: ../backend/java-services
+      dockerfile: llm-gateway-service/Dockerfile
+
+    container_name: llm-gateway-service-java
+
+    restart: always
+
+    ports:
+      - "8086:8085"
+
+    env_file:
+      - .env
+
+    environment:
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_LLM_GATEWAY_DBNAME: ${MYSQL_LLM_GATEWAY_DBNAME:-llm_gateway}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+    networks:
+      - ragflow
+
+  java-identity-service:
+    build:
+      context: ../backend/java-services/identity-service
+      dockerfile: Dockerfile
+    container_name: java-identity-service
+    ports:
+      - "8081:8081"
+    env_file:
+      - .env
+    environment:
+      - DB_HOST=mysql
+      - DB_PASSWORD=${MYSQL_PASSWORD}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - ES_HOST=es01
+      - ES_PORT=9200
+      - ES_PASSWORD=${ELASTIC_PASSWORD}
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+
+      - ragflow
+
+  mongodb:
+    image: mongo:latest
+    container_name: audit-mongodb
+    ports:
+      - "27017:27017"
+    env_file:
+      - .env
+    environment:
+        MONGO_INITDB_ROOT_USERNAME: ${MONGODB_USERNAME}
+        MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_PASSWORD}
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - ragflow
+      
+  dotnet-file-service:
+    build:
+      context: ../backend/dotnet-services/file-service
+      dockerfile: Dockerfile
+
+    container_name: rag-dotnet-file-service
+
+    restart: always
+
+    ports:
+      - "5009:8080"
+
+    env_file:
+      - .env
+
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+
+      ConnectionStrings__DefaultConnection: ${DATABASE_URL_FILE}
+
+      Storage__Provider: MinIO
+      Storage__Endpoint: minio:9000
+      Storage__AccessKey: ${MINIO_USER}
+      Storage__SecretKey: ${MINIO_PASSWORD}
+      Storage__BucketName: ragflow-files
+      Storage__UseSSL: "false"
+
+      Redis__ConnectionString: redis:6379,password=${REDIS_PASSWORD}
+
+      RabbitMQ__Host: rabbitmq
+      RabbitMQ__Username: guest
+      RabbitMQ__Password: guest
+
+      IdentityService__BaseUrl: http://identity-service:3000
+
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_started
+      identity-service:
+        condition: service_started
+
+    networks:
+      ragflow:
+        aliases:
+          - rag-dotnet-file-service
+          - dotnet-file-service
+
+  document-service:
+    build:
+      context: ../backend/java-services
+      dockerfile: document-service/Dockerfile
+
+    container_name: document-service
+
+    restart: always
+
+    ports:
+      - "8085:8080"
+
+    env_file:
+      - .env
+    
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+    networks:
+      - ragflow
+      
+  document-service-dotnet:
+    build:
+      context: ../backend/dotnet-services/document-service
+      dockerfile: Dockerfile
+    container_name: rag-document-service
+    restart: always
+
+    ports:
+      - "5007:8081"
+
+    env_file:
+      - .env
+
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8081
+      ConnectionStrings__DocumentDb: "server=mysql;port=3306;database=document_db;user=root;password=infini_rag_flow"
+     
+
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_started
+    networks:
+      - ragflow
+
+# Root level declaration for the named volume
+volumes:
+  mongo_data:

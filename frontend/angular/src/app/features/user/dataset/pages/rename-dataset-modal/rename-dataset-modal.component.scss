@@ -1,0 +1,25 @@
+.rename-field {
+  width: 100%;
+
+  &__same-name-hint {
+    color: var(--text-secondary);
+  }
+}
+
+mat-dialog-content {
+  padding-top: 8px;
+  min-width: 360px;
+}
+
+.rename-save-btn {
+  background-color: var(--text-primary) !important;
+  color: var(--bg-surface) !important;
+  font-weight: 600;
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    background-color: var(--text-primary) !important; // keep it visible, just dimmed
+    color: var(--bg-surface) !important;
+  }
+}

@@ -1,0 +1,326 @@
+// ══════════════════════════════════════════════════════════════
+// Navigation Header - Theme-Aware Styles
+// ══════════════════════════════════════════════════════════════
+
+.navigation-header {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background-color: var(--bg-base);
+  display: flex;
+  align-items: center;
+  padding: 20px 40px;
+}
+
+.nav-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 16px;
+}
+
+// ── Brand Section ────────────────────────────────────────────
+.brand-section {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.brand-logo-btn {
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: opacity 0.2s ease;
+
+  &:hover {
+    opacity: 0.85;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--app-teal);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+}
+
+.brand-logo {
+  width: 40px;
+  height: 40px;
+  display: block;
+}
+
+// ── Segmented Control (Center Navigation) ────────────────────
+.segmented-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px;
+  background-color: var(--table-header-bg);
+  border-radius: 24px;
+  flex: 0 1 auto;
+  justify-content: center;
+}
+
+.segment-item {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 24px;
+  height: 40px;
+  border-radius: 20px;
+  text-decoration: none;
+  font-size: 16px;
+  font-weight: 400;
+  color: var(--text-secondary);
+  background-color: transparent;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  white-space: nowrap;
+  position: relative;
+  border: none;
+
+  &:hover:not(.active) {
+    color: var(--text-primary);
+    background-color: var(--table-header-bg);
+  }
+
+  &.active {
+    background: var(--text-primary);
+    color: var(--bg-base);
+    font-weight: 500;
+    border-bottom: 2px solid var(--app-teal);
+    box-shadow: 0 2px 8px rgba(0, 190, 180, 0.2);
+  }
+
+  .segment-icon {
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+    color: inherit;
+  }
+
+  .segment-label {
+    font-size: 16px;
+    line-height: 24px;
+  }
+}
+
+// ── Right Actions ─────────────────────────────────────────────
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-shrink: 0;
+  color: var(--text-badge);
+}
+
+.action-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-badge);
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: transparent;
+  border: none;
+  padding: 0;
+  position: relative;
+
+  &:hover {
+    color: var(--text-primary);
+
+    .action-icon {
+      color: var(--text-primary);
+    }
+  }
+
+  .action-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+    color: var(--text-badge);
+    transition: color 0.2s ease;
+  }
+}
+
+.nav-actions .action-btn.mat-mdc-button {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-badge);
+  font-size: 14px;
+  font-weight: 400;
+  padding: 4px 8px;
+  min-width: auto;
+  height: auto;
+  line-height: 1;
+
+  &:hover {
+    background-color: transparent;
+    color: var(--text-primary);
+  }
+
+  .language-text {
+    font-size: 14px;
+    line-height: 20px;
+  }
+
+  .dropdown-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    margin-left: 2px;
+  }
+}
+
+.notification-btn {
+  .notification-dot {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 6px;
+    height: 6px;
+    background-color: var(--status-error);
+    border-radius: 50%;
+  }
+}
+
+.nav-actions .profile-btn.mat-mdc-button {
+  padding: 0;
+  min-width: auto;
+  width: 32px;
+  height: 32px;
+
+  &:hover {
+    background-color: transparent;
+  }
+}
+
+.profile-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #42d7e7 0%, #478af5 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: white;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+// ── Responsive Design ─────────────────────────────────────────
+@media (max-width: 1024px) {
+  .navigation-header {
+    padding: 0 24px;
+  }
+
+  .segmented-control {
+    gap: 6px;
+    padding: 8px;
+  }
+
+  .segment-item {
+    padding: 6px 16px;
+    height: 36px;
+    font-size: 14px;
+
+    .segment-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+  }
+
+  .nav-actions {
+    gap: 12px;
+  }
+}
+
+@media (max-width: 768px) {
+  .navigation-header {
+    padding: 0 16px;
+    height: 64px;
+  }
+
+  .brand-logo {
+    width: 32px;
+    height: 32px;
+  }
+
+  .segmented-control {
+    gap: 4px;
+    padding: 6px;
+    overflow-x: auto;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  .segment-item {
+    padding: 6px 12px;
+    height: 32px;
+    font-size: 13px;
+
+    .segment-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+    }
+  }
+
+  .nav-actions {
+    gap: 8px;
+
+    .language-btn {
+      display: none;
+    }
+  }
+
+  .profile-avatar {
+    width: 28px;
+    height: 28px;
+    font-size: 12px;
+  }
+}
+
+// ── Menu Dropdown Dark Theme ──────────────────────────────────
+::ng-deep .custom-menu.mat-mdc-menu-panel {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+
+  .mat-mdc-menu-content {
+    padding: 6px;
+  }
+
+  .mat-mdc-menu-item {
+    color: var(--text-primary);
+    border-radius: 6px;
+    margin: 2px 0;
+    font-size: 14px;
+    min-height: 40px;
+
+    &:hover {
+      background-color: var(--border-hover);
+    }
+
+    .mat-icon {
+      color: var(--text-badge);
+      margin-right: 12px;
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+  }
+}

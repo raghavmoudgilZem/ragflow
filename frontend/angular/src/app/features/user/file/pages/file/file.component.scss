@@ -1,0 +1,493 @@
+// ────────────────────────────────────────────────────────────
+//  Files Page — Theme-Aware Styles
+// ────────────────────────────────────────────────────────────
+
+// ── Breadcrumb Navigation ─────────────────────────────────────
+.breadcrumb-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+}
+
+.breadcrumb-folder-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+  color: var(--text-badge);
+  flex-shrink: 0;
+  margin-right: 4px;
+}
+
+.breadcrumb-item {
+  background: transparent;
+  border: none;
+  font-size: 14px;
+  font-weight: 400;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  line-height: 1.4;
+
+  &.active {
+    cursor: default;
+    color: var(--text-primary);
+    font-weight: 500;
+  }
+
+  &.clickable {
+    color: var(--text-secondary);
+    cursor: pointer;
+
+    &:hover {
+      background-color: var(--border-hover);
+      color: var(--text-primary);
+    }
+
+    &:active {
+      background-color: var(--border-hover);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--app-teal);
+      outline-offset: 2px;
+    }
+  }
+}
+
+.breadcrumb-separator {
+  font-size: 14px;
+  width: 14px;
+  height: 14px;
+  color: var(--text-badge);
+  flex-shrink: 0;
+}
+
+// ── "Add file" button ─────────────────────────────────────────
+// mat-flat-button override with inverted colors
+.add-file-btn {
+  background-color: var(--text-primary) !important;
+  color: var(--bg-base) !important;
+  font-weight: 500 !important;
+  border-radius: 6px !important;
+  height: 32px !important;
+  line-height: 32px !important;
+  border: none !important;
+
+  &:hover {
+    opacity: 0.8;
+    background-color: var(--text-primary) !important;
+  }
+
+  mat-icon {
+    color: var(--bg-base) !important;
+    margin-right: 4px;
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+}
+
+// ── "Add file" dropdown menu dark theme ───────────────────────
+::ng-deep .mat-mdc-menu-panel {
+  background-color: var(--bg-secondary) !important;
+  border: 1px solid var(--border-color);
+
+  .mat-mdc-menu-item {
+    color: var(--text-primary) !important;
+
+    &:hover {
+      background-color: var(--table-header-bg) !important;
+    }
+
+    .mat-icon {
+      color: var(--text-secondary) !important;
+      margin-right: 8px;
+    }
+  }
+}
+
+// ── Table wrapper ─────────────────────────────────────────────
+.files-table-wrap {
+  border: 1px solid var(--table-border);
+  border-radius: 12px;
+  overflow: hidden;
+  background-color: var(--table-bg);
+}
+
+.files-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  color: var(--text-primary);
+
+  thead tr {
+    background: var(--table-header-bg);
+  }
+
+  th {
+    padding: 14px 16px;
+    text-align: left;
+    font-weight: 500;
+    color: var(--table-header-text);
+    font-size: 13px;
+    white-space: nowrap;
+    border-bottom: 1px solid var(--table-border);
+    background-color: var(--table-header-bg);
+  }
+
+  td {
+    padding: 16px;
+    border-bottom: 1px solid var(--table-row-border);
+    vertical-align: middle;
+    background-color: var(--table-bg);
+  }
+
+  tbody tr {
+    transition: background 0.15s ease;
+
+    &:hover {
+      td {
+        background-color: var(--table-header-bg);
+      }
+
+      .folder-container {
+        .file-name-text {
+          color: var(--app-teal);
+        }
+
+        .folder-arrow {
+          opacity: 1;
+          transform: translateX(0);
+          color: var(--app-teal);
+        }
+      }
+
+      .file-icon.folder {
+        color: #fcd34d;
+      }
+    }
+
+    &.selected-row {
+      td {
+        background-color: rgba(0, 190, 180, 0.08);
+      }
+    }
+
+    &:last-child td {
+      border-bottom: none;
+    }
+  }
+}
+
+// ── Column widths ─────────────────────────────────────────────
+.col-check {
+  width: 44px;
+}
+.col-name {
+  min-width: 280px;
+  max-width: 400px;
+}
+.col-date {
+  min-width: 180px;
+}
+.col-size {
+  width: 120px;
+}
+.col-dataset {
+  min-width: 160px;
+}
+.col-action {
+  width: 280px;
+}
+
+// ── File name cell ────────────────────────────────────────────
+.file-name {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  &.folder-row {
+    padding: 0;
+  }
+}
+
+.folder-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: transparent;
+  border: none;
+  padding: 0;
+  text-align: left;
+  width: 100%;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  border-radius: 4px;
+  margin: -4px;
+  padding: 4px;
+
+  .file-icon {
+    flex-shrink: 0;
+  }
+
+  .file-name-text {
+    flex: 1;
+    font-size: 14px;
+    color: var(--text-primary);
+    font-weight: 500;
+    line-height: 1.4;
+    transition: color 0.2s ease;
+  }
+
+  .folder-arrow {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    color: var(--text-badge);
+    opacity: 0;
+    transition: all 0.2s ease;
+    transform: translateX(-4px);
+    flex-shrink: 0;
+  }
+
+  &:hover {
+    .file-name-text {
+      color: var(--app-teal);
+    }
+
+    .folder-arrow {
+      opacity: 1;
+      transform: translateX(0);
+      color: var(--app-teal);
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--app-teal);
+    outline-offset: 2px;
+    border-radius: 4px;
+
+    .folder-arrow {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+}
+
+.file-name-text {
+  flex: 1;
+  line-height: 1.4;
+}
+
+.file-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  line-height: 18px;
+  flex-shrink: 0;
+
+  &.folder {
+    color: #fbbf24;
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+
+  &.pdf {
+    color: #e05252;
+  }
+
+  &.doc {
+    color: #4a90e2;
+  }
+
+  &.excel,
+  &.csv {
+    color: #10b981;
+  }
+
+  &.ppt {
+    color: #f59e0b;
+  }
+
+  &.txt {
+    color: var(--text-secondary);
+  }
+
+  &.generic {
+    color: var(--text-secondary);
+  }
+}
+
+// ── Source icon ───────────────────────────────────────────────
+// Matches RAGFlow: MonitorUp icon (16px) in rounded teal background circle
+.source-icon-wrapper {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: rgba(0, 190, 180, 0.05); // bg-accent-primary-5
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.source-icon-svg {
+  color: var(--app-teal);
+  width: 16px;
+  height: 16px;
+}
+
+// ── Parse status ──────────────────────────────────────────────
+.parse-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  span {
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+}
+
+.status-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  line-height: 16px;
+
+  &.success {
+    color: rgb(0, 190, 180); // Teal for sync icon
+    animation: spin 3s linear infinite; // Assuming running
+    @keyframes spin {
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+  }
+
+  &.dot {
+    font-size: 8px;
+    width: 8px;
+    height: 8px;
+    color: #10b981; // Specifically emerald green for dot
+    margin-top: 1px;
+  }
+}
+
+// ── Toggle switch (matches RAGFlow teal toggle) ───────────────
+// Match RAGFlow Radix UI switch: h-4 w-7 = 16px × 28px
+// Material default ~20px × 36px → scale(0.75) for smaller size
+::ng-deep mat-slide-toggle {
+  transform: scale(0.75);
+  transform-origin: left center;
+  margin-left: -4px;
+
+  // Force teal color on the actual track element
+  .mdc-switch--selected .mdc-switch__track {
+    background-color: rgb(0, 190, 180) !important;
+    border-color: rgb(0, 190, 180) !important;
+  }
+
+  // Force white color on the thumb/handle
+  .mdc-switch--selected .mdc-switch__handle::after {
+    background-color: #ffffff !important;
+  }
+
+  // Unselected state styling
+  .mdc-switch--unselected .mdc-switch__track {
+    background-color: rgba(255, 255, 255, 0.3) !important;
+    border-color: transparent !important;
+  }
+
+  .mdc-switch--unselected .mdc-switch__handle::after {
+    background-color: #ffffff !important;
+  }
+
+  // Ripple and focus states
+  .mdc-switch:hover .mdc-switch__track {
+    opacity: 1;
+  }
+}
+
+// ── Row action buttons ────────────────────────────────────────
+.action-btns {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+// Use ::ng-deep to penetrate Angular's view encapsulation and target Material table rows
+::ng-deep .mat-mdc-row:hover .action-btns,
+::ng-deep .mat-mdc-row:focus-within .action-btns {
+  opacity: 1;
+}
+
+.action-icon-btn {
+  color: var(--text-secondary) !important;
+
+  &:hover {
+    background-color: var(--table-header-bg) !important;
+    color: var(--text-primary) !important;
+  }
+
+  &.danger {
+    &:hover {
+      color: var(--status-error) !important;
+    }
+  }
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+}
+
+// ── Metadata menu ─────────────────────────────────────────────
+::ng-deep .metadata-menu {
+  .mat-mdc-menu-panel {
+    min-width: 280px;
+    background-color: var(--bg-secondary) !important;
+    border: 1px solid var(--border-color);
+  }
+}
+
+.metadata-content {
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.metadata-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  gap: 12px;
+}
+
+.metadata-label {
+  color: var(--text-secondary);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.metadata-value {
+  color: var(--text-primary);
+  text-align: right;
+  word-break: normal;
+  overflow-wrap: break-word;
+}
+
+// ── Empty state ───────────────────────────────────────────────
+.empty-state {
+  text-align: center;
+  color: var(--text-secondary);
+  padding: 40px;
+}

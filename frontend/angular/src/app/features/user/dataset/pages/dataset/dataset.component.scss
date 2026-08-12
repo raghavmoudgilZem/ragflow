@@ -1,0 +1,263 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// Page wrapper
+// ─────────────────────────────────────────────────────────────────────────────
+
+:host {
+  display: flex;
+  flex: 1;
+  overflow: auto;
+}
+
+.dataset-page {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  padding: 0 60px 40px; // ← removed top padding
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Loading state
+// ─────────────────────────────────────────────────────────────────────────────
+
+.dataset-page--loading {
+  align-items: center;
+  justify-content: center;
+  padding-top: 40px;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Empty state box
+// ─────────────────────────────────────────────────────────────────────────────
+
+.dataset-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+
+  width: 480px;
+  max-width: 100%;
+  padding: 48px 32px;
+
+  border: 1.5px dashed var(--app-color-border, #d0d0d0);
+  border-radius: 16px;
+  background-color: var(--app-card-bg, #ffffff);
+
+  &__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-secondary, #9e9e9e);
+    opacity: 0.85;
+  }
+
+  &__text {
+    font-size: 14px;
+    color: var(--text-secondary, #9e9e9e);
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  &__add-btn {
+    width: 36px;
+    height: 36px;
+    border: 1.5px solid var(--app-color-border, #d0d0d0) !important;
+    border-radius: 10px !important;
+    color: var(--text-primary, #1a1a1a);
+    transition:
+      background-color 0.15s ease,
+      border-color 0.15s ease;
+    margin-top: 4px;
+
+    &:hover {
+      background-color: var(--bg-hover, #f5f5f5);
+      border-color: var(--border-hover, #bdbdbd) !important;
+    }
+
+    mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+      line-height: 20px;
+    }
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// List state
+// ─────────────────────────────────────────────────────────────────────────────
+
+.dataset-page--list {
+  display: block;
+  align-items: unset;
+  justify-content: unset;
+  min-height: unset;
+  padding-top: 8px; // ← controlled top padding for list state
+
+  .dataset-page__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+  }
+
+  .dataset-page__title {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+  }
+
+  .dataset-page__controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .dataset-page__filter-btn {
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color) !important;
+    border-radius: 8px !important;
+
+    &:not([disabled]):hover {
+      background-color: var(--bg-hover);
+      color: var(--text-primary);
+    }
+
+    &[disabled] {
+      opacity: 0.4;
+    }
+  }
+
+  .dataset-page__search {
+    width: 280px;
+    flex: 0 0 auto;
+
+    // Collapse the reserved hint/error space so the field's actual
+    // visual height matches the button next to it
+    ::ng-deep .mat-mdc-form-field-subscript-wrapper {
+      display: none;
+    }
+
+    ::ng-deep .mat-mdc-text-field-wrapper {
+      background-color: var(--bg-surface);
+    }
+
+    ::ng-deep .mat-mdc-form-field-flex {
+      align-items: center;
+      height: 40px; // match .dataset-page__create-btn's height
+    }
+
+    ::ng-deep .mat-mdc-form-field-infix {
+      padding-top: 8px;
+      padding-bottom: 8px;
+      min-height: unset;
+    }
+
+    mat-icon[matPrefix] {
+      color: var(--text-secondary);
+      margin-right: 4px;
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+  }
+
+  .dataset-page__filter-btn--active {
+    background-color: var(--text-primary) !important;
+    color: var(--bg-base) !important;
+  }
+
+  .dataset-page__create-btn {
+    background-color: var(--text-primary) !important;
+    color: var(--bg-base, #fff) !important;
+    border-radius: 8px !important;
+    font-weight: 600;
+    height: 40px;
+  }
+
+  .dataset-page__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+
+    @media (min-width: 1300px) {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+
+  .dataset-page__paginator {
+    margin-top: 24px;
+    display: flex;
+    justify-content: flex-end;
+    background: transparent;
+    color: var(--text-primary);
+
+    ::ng-deep .mat-mdc-paginator-container {
+      justify-content: flex-end;
+    }
+  }
+}
+
+.dataset-empty--no-results {
+  border: none;
+  background: transparent;
+  padding: 80px 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Dataset card footer
+// ─────────────────────────────────────────────────────────────────────────────
+
+.dataset-card-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 0; // ← removed top margin
+
+  &__files {
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+
+  &__date {
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Custom dataset avatar — single initial
+// ─────────────────────────────────────────────────────────────────────────────
+
+.dataset-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Hide default card avatar fallback — we provide our own via projection
+// ─────────────────────────────────────────────────────────────────────────────
+
+.dataset-page__grid {
+  ::ng-deep app-card .avatar-fallback {
+    display: none !important;
+  }
+}

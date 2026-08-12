@@ -1,0 +1,137 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────────────────────────
+// notification_service_config
+// Stores per-channel provider credentials (SendGrid, SES, Mailgun…)
+// ─────────────────────────────────────────────────────────────────
+model NotificationServiceConfig {
+  configId        BigInt      @id @default(autoincrement()) @map("config_id")
+  channelType     ChannelType @map("channel_type")
+  providerName    String      @db.VarChar(50)  @map("provider_name")
+  providerHost    String?     @db.VarChar(255) @map("provider_host")
+  providerPort    Int?        @map("provider_port")
+  clientId        String?     @db.VarChar(255) @map("client_id")
+  clientSecretKey String?     @db.VarChar(255) @map("client_secret_key")
+  status          Boolean
+  createdAt       DateTime    @default(now()) @map("created_at")
+  updatedAt       DateTime?   @updatedAt       @map("updated_at")
+
+  // relation
+  emailLogs       EmailLog[]
+
+  @@map("notification_service_config")
+}
+
+// email_templates
+model EmailTemplate {
+  templateId   BigInt    @id @default(autoincrement()) @map("template_id")
+  templateName String    @db.VarChar(100) @map("template_name")
+  templateSlug String    @db.VarChar(100) @map("template_slug")
+  version      Int       @default(1)
+  isLatest     Boolean   @default(true)  @map("is_latest")
+  subject      String?   @db.VarChar(255)
+  template     String    @db.Text
+  status       Boolean
+  createdAt    DateTime? @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt      @map("updated_at")
+
+  // relations
+  emailLogs    EmailLog[]
+  notificationJobs NotificationJob[]
+
+  @@unique([templateSlug, version])
+  @@map("email_templates")
+}
+
+// notification_logs
+model EmailLog {
+  emailLogId BigInt           @id @default(autoincrement()) @map("email_log_id")
+  recipient  String           @db.VarChar(255)
+  templateId BigInt           @map("template_id")
+  configId   BigInt           @map("config_id")
+  data       String           @db.Text
+  status     EmailLogStatus?
+  createdAt  DateTime         @default(now()) @map("created_at")
+  sentAt     DateTime?        @map("sent_at")
+  updatedAt  DateTime?        @updatedAt      @map("updated_at")
+
+  // relations
+  template   EmailTemplate             @relation(fields: [templateId], references: [templateId])
+  config     NotificationServiceConfig @relation(fields: [configId], references: [configId])
+
+  @@map("notification_logs")
+}
+
+// Enums
+enum ChannelType {
+  EMAIL
+  SMS
+}
+
+enum EmailLogStatus {
+  sent
+  failed
+}
+
+enum JobStatus {
+  queued
+  processing
+  sent
+  failed
+}
+
+enum AuditEvent {
+  created
+  processing
+  sent
+  failed
+  retrying
+}
+
+// notification_jobs — queue tracking table
+model NotificationJob {
+  jobId         BigInt      @id @default(autoincrement()) @map("job_id")
+  transactionId String      @unique @default(uuid()) @db.VarChar(36) @map("transaction_id")
+  bullJobId     String?     @db.VarChar(100) @map("bull_job_id")
+  recipient     String      @db.VarChar(255)
+  channel       ChannelType
+  templateSlug  String      @db.VarChar(100) @map("template_slug")
+  templateId    BigInt?     @map("template_id")
+  data          String      @db.Text
+  sourceService String?     @db.VarChar(100) @map("source_service")
+  correlationId String?     @db.VarChar(100) @map("correlation_id")
+  status        JobStatus   @default(queued)
+  errorMessage  String?     @db.Text @map("error_message")
+  createdAt     DateTime    @default(now()) @map("created_at")
+  processedAt   DateTime?   @map("processed_at")
+  updatedAt     DateTime?   @updatedAt      @map("updated_at")
+
+  // relations
+  template      EmailTemplate?        @relation(fields: [templateId], references: [templateId])
+  auditLogs     NotificationAuditLog[]
+
+  @@map("notification_jobs")
+}
+
+// notification_audit_log — lifecycle event trail per transaction
+model NotificationAuditLog {
+  auditId       BigInt      @id @default(autoincrement()) @map("audit_id")
+  transactionId String      @db.VarChar(36) @map("transaction_id")
+  event         AuditEvent
+  detail        String?     @db.Text
+  createdAt     DateTime    @default(now()) @map("created_at")
+
+  // relation
+  job           NotificationJob @relation(fields: [transactionId], references: [transactionId])
+
+  @@map("notification_audit_log")
+}

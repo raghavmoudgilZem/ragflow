@@ -1,0 +1,169 @@
+<!-- ── Loading state ───────────────────────────────────────────────────── -->
+@if (isLoading()) {
+  <div class="dataset-page dataset-page--loading">
+    <app-loader [diameter]="36" />
+  </div>
+}
+
+<!-- ── Error state ────────────────────────────────────────────────────── -->
+@else if (loadError()) {
+  <div class="dataset-page">
+    <div class="dataset-empty">
+      <p class="dataset-empty__text">{{ errorMessage }}</p>
+      @if (loadError() !== 'unauthorized' && loadError() !== 'invalid-params') {
+        <button mat-flat-button (click)="loadDatasets()">Retry</button>
+      }
+    </div>
+  </div>
+}
+
+<!-- ── True empty state — never had any datasets, no search active ─────── -->
+@else if (!hasDatasets && !isSearchActive && !hasEverHadDatasets()) {
+  <div class="dataset-page">
+    <div class="dataset-empty">
+      <div class="dataset-empty__icon">
+        <svg
+          width="48"
+          height="48"
+          viewBox="0 0 48 48"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <ellipse
+            cx="24"
+            cy="12"
+            rx="14"
+            ry="5"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+          />
+          <path
+            d="M10 12V36C10 38.76 16.27 41 24 41"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+          />
+          <path d="M38 12V26" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+          <path
+            d="M10 22C10 24.76 16.27 27 24 27C26.16 27 28.2 26.76 30 26.32"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+          />
+          <path
+            d="M10 17C10 19.76 16.27 22 24 22C26.16 22 28.2 21.76 30 21.32"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+          />
+          <path
+            d="M34 26L29 35H36L31 44"
+            stroke="#00BFA5"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </div>
+      <p class="dataset-empty__text">No dataset created yet</p>
+      <button
+        mat-icon-button
+        class="dataset-empty__add-btn"
+        aria-label="Create new dataset"
+        (click)="openCreateModal()"
+      >
+        <mat-icon>add</mat-icon>
+      </button>
+    </div>
+  </div>
+}
+
+<!-- ── List state — header always shown here, body varies ──────────────── -->
+@else {
+  <div class="dataset-page dataset-page--list">
+    <div class="dataset-page__header">
+      <h1 class="dataset-page__title">Dataset</h1>
+
+      <div class="dataset-page__controls">
+        <button
+          mat-icon-button
+          class="dataset-page__filter-btn"
+          [class.dataset-page__filter-btn--active]="hasActiveFilters"
+          [matMenuTriggerFor]="filterMenu"
+          aria-label="Filter datasets"
+        >
+          <mat-icon>filter_alt</mat-icon>
+        </button>
+
+        <mat-menu #filterMenu="matMenu" class="filter-panel-menu">
+          <div (click)="$event.stopPropagation()">
+            <app-dataset-filter-panel
+              [initialFilters]="filters()"
+              (apply)="onFiltersApplied($event)"
+            />
+          </div>
+        </mat-menu>
+
+        <mat-form-field appearance="outline" class="dataset-page__search">
+          <mat-icon matPrefix>search</mat-icon>
+          <input
+            matInput
+            placeholder="Search"
+            [value]="searchTerm()"
+            (input)="onSearchInput($any($event.target).value)"
+          />
+          @if (isSearchActive) {
+            <button matSuffix mat-icon-button aria-label="Clear search" (click)="clearSearch()">
+              <mat-icon>close</mat-icon>
+            </button>
+          }
+        </mat-form-field>
+
+        <button mat-flat-button class="dataset-page__create-btn" (click)="openCreateModal()">
+          <mat-icon>add</mat-icon>
+          Create dataset
+        </button>
+      </div>
+    </div>
+
+    @if (!hasDatasets) {
+      <div class="dataset-empty dataset-empty--no-results">
+        <p class="dataset-empty__text">No datasets found</p>
+        @if (isSearchActive) {
+          <button mat-button (click)="clearSearch()">Clear search</button>
+        }
+      </div>
+    } @else {
+      <div class="dataset-page__grid">
+        @for (dataset of datasets(); track dataset.id) {
+          <app-card
+            [data]="dataset"
+            [menuActions]="cardMenuActions"
+            (cardClick)="onCardClick($event)"
+            (menuAction)="onCardMenuAction($event)"
+          >
+            <div avatar class="dataset-avatar">
+              {{ dataset.title.charAt(0).toUpperCase() }}
+            </div>
+            <div footer class="dataset-card-footer">
+              <span class="dataset-card-footer__files">{{ dataset.fileCount }} files</span>
+              <span class="dataset-card-footer__date">{{ formatDate(dataset.createdAt) }}</span>
+            </div>
+          </app-card>
+        }
+      </div>
+
+      @if (showPaginator) {
+        <mat-paginator
+          class="dataset-page__paginator"
+          [length]="total()"
+          [pageIndex]="page() - 1"
+          [pageSize]="pageSize()"
+          [pageSizeOptions]="[10, 20, 50]"
+          (page)="onPageChange($event)"
+        />
+      }
+    }
+  </div>
+}

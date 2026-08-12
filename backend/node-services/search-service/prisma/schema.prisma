@@ -1,0 +1,37 @@
+// prisma/schema.prisma
+// This schema is designed for the Search Microservice.
+
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+  // output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+model SearchConfiguration {
+  id        String   @id @default(uuid())
+  name      String   @db.Text
+  user_id    String   // FIXED: Removed @db.Uuid (MySQL uses standard VarChar)
+  tenant_id  String?  @db.VarChar(255) // FIXED: Switched from @db.Text to @db.VarChar(255) for clean indexing
+  avatar     String?
+  description String?
+  
+  /**
+   * config stores the RAG recipe:
+   * {
+   *   "kb_ids": string[],
+   *   "threshold": float,
+   *   "top_k": int,
+   *   "llm_setting": string
+   * }
+   */
+  search_config    Json
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@index([user_id])
+  @@index([tenant_id]) // FIXED: Works out-of-the-box now since tenantId is a VarChar(255)
+}

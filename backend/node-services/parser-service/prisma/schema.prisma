@@ -1,0 +1,37 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+  moduleFormat = "cjs"
+  runtime      = "nodejs"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model ParseJob {
+  id             String    @id @default(uuid()) @db.Uuid
+  documentId     String    @map("document_id") @db.VarChar(255)
+  documentPath   String    @map("document_path") @db.VarChar(255)
+  tenantId       String    @map("tenant_id") @db.VarChar(255)
+  status         String    @db.VarChar(50) // queued | processing | success | failed
+  attemptCount   Int       @default(0) @map("attempt_count")
+  maxAttempts    Int       @default(3) @map("max_attempts")
+  idempotencyKey String?   @unique @map("idempotency_key") @db.VarChar(255)
+  errorReason    String?   @map("error_reason")
+  parseDataPath  String?   @map("parse_data_path") @db.VarChar(512)
+  metadata       Json?     @db.JsonB
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @default(now()) @updatedAt @map("updated_at")
+  startedAt      DateTime? @map("started_at")
+  completedAt    DateTime? @map("completed_at")
+  @@index([documentId], name: "idx_document_id")
+  @@index([tenantId, status], name: "idx_tenant_status") // Recommended for querying tenant jobs by status
+  @@map("parse_jobs")
+}
+

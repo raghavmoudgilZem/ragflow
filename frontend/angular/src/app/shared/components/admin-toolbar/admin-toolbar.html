@@ -1,0 +1,31 @@
+<div class="toolbar-wrapper">
+  <h2 class="page-title">{{ title }}</h2>
+
+  <div class="toolbar-actions">
+    <button mat-icon-button [matMenuTriggerFor]="filterMenu">
+      <mat-icon>filter_alt</mat-icon>
+    </button>
+
+    <div class="search-box">
+      <mat-icon>search</mat-icon>
+      <input type="text" placeholder="Search" (keyup)="onSearch($event)">
+    </div>
+  </div>
+</div>
+
+<mat-menu #filterMenu="matMenu" class="dark-filter-menu">
+  <div class="filter-content" (click)="$event.stopPropagation()">
+    <div class="filter-header">Service type</div>
+    
+    <mat-radio-group class="vertical-radio-group" (change)="onFilterSelect($event.value)">
+      <mat-radio-button value="All" [checked]="true">All</mat-radio-button>
+      @for (opt of filterConfig?.options; track opt) {
+        <mat-radio-button [value]="opt">{{ opt }}</mat-radio-button>
+      }
+    </mat-radio-group>
+
+    <div class="menu-footer">
+      <button mat-button class="reset-btn" (click)="resetFilters()">Reset</button>
+    </div>
+  </div>
+</mat-menu>

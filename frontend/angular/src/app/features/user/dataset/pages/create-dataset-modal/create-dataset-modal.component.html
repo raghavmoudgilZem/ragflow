@@ -1,0 +1,190 @@
+<div class="dataset-modal">
+  <!-- ── Header ──────────────────────────────────────────────────── -->
+  <div class="dataset-modal__header">
+    <h2 class="dataset-modal__title">Create dataset</h2>
+    <button
+      mat-icon-button
+      class="dataset-modal__close"
+      aria-label="Close dialog"
+      (click)="attemptClose()"
+    >
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <mat-dialog-content class="dataset-modal__body">
+    <form [formGroup]="form" class="dataset-form" novalidate autocomplete="off">
+      <!-- ── Name ─────────────────────────────────────────────────── -->
+      <div class="dataset-form__field">
+        <label class="dataset-form__label dataset-form__label--required"> Name </label>
+        <mat-form-field appearance="outline" class="dataset-form__control">
+          <input matInput formControlName="name" placeholder="Please input name." maxlength="100" />
+          <mat-error *ngIf="nameControl.hasError('required')"> Name is required </mat-error>
+          <mat-error *ngIf="nameControl.hasError('maxlength')">
+            Name cannot exceed 100 characters
+          </mat-error>
+        </mat-form-field>
+      </div>
+
+      <!-- ── Embedding Model ───────────────────────────────────────── -->
+      <div class="dataset-form__field">
+        <label class="dataset-form__label dataset-form__label--required">
+          Embedding model
+          <mat-icon
+            class="dataset-form__hint-icon"
+            matTooltip="The model used to generate vector embeddings for this dataset."
+            matTooltipPosition="right"
+          >
+            help_outline
+          </mat-icon>
+        </label>
+
+        <app-loader *ngIf="isLoadingModels()" [diameter]="20" />
+
+        <div *ngIf="modelsLoadError() && !isLoadingModels()" class="dataset-form__error-state">
+          <mat-icon>error_outline</mat-icon>
+          <span>Failed to load embedding models.</span>
+        </div>
+
+        <mat-form-field
+          *ngIf="!isLoadingModels() && !modelsLoadError()"
+          appearance="outline"
+          class="dataset-form__control"
+        >
+          <mat-select formControlName="embeddingModel" placeholder="Select an embedding model">
+            <mat-option
+              *ngFor="let model of embeddingModels(); trackBy: trackById"
+              [value]="model.id"
+            >
+              <span class="model-option">
+                {{ model.name }}
+              </span>
+            </mat-option>
+          </mat-select>
+          <mat-error *ngIf="embeddingModelControl.hasError('required')">
+            Please select an embedding model
+          </mat-error>
+        </mat-form-field>
+      </div>
+
+      <!-- ── Parse Type ────────────────────────────────────────────── -->
+      <div class="dataset-form__field">
+        <label class="dataset-form__label">Parse type</label>
+        <mat-radio-group
+          formControlName="parseType"
+          class="dataset-form__radio-group"
+          aria-label="Parse type"
+        >
+          <mat-radio-button value="built-in">Built-in</mat-radio-button>
+          <mat-radio-button value="pipeline">Pipeline</mat-radio-button>
+        </mat-radio-group>
+      </div>
+
+      <!-- ── Built-in Chunking Method (conditional) ────────────────── -->
+      <div class="dataset-form__field" *ngIf="isBuiltIn">
+        <label class="dataset-form__label dataset-form__label--required">
+          Built-in
+          <mat-icon
+            class="dataset-form__hint-icon"
+            matTooltip="Choose how documents will be split into chunks for indexing."
+            matTooltipPosition="right"
+          >
+            help_outline
+          </mat-icon>
+        </label>
+
+        <mat-form-field appearance="outline" class="dataset-form__control">
+          <mat-select
+            formControlName="chunkingMethod"
+            placeholder="Please select a chunking method."
+            (openedChange)="onChunkingDropdownOpen($event)"
+          >
+            <!--
+              Search row — placed BEFORE options but marked as disabled
+              so Angular Material skips it during keyboard navigation
+              and does NOT auto-focus it when the panel opens.
+            -->
+            <mat-option disabled class="chunking-search-option">
+              <div class="chunking-search" (click)="$event.stopPropagation()">
+                <mat-icon class="chunking-search__icon">search</mat-icon>
+                <input
+                  #chunkingSearchInput
+                  class="chunking-search__input"
+                  placeholder="Search..."
+                  [value]="chunkingSearchTerm()"
+                  (input)="onChunkingSearch($any($event.target).value)"
+                  (keydown)="$event.stopPropagation()"
+                />
+              </div>
+            </mat-option>
+
+            <ng-container *ngIf="!isLoadingMethods(); else loadingMethods">
+              <mat-option
+                *ngFor="let method of filteredChunkingMethods(); trackBy: trackById"
+                [value]="method.id"
+              >
+                {{ method.label }}
+              </mat-option>
+              <mat-option *ngIf="filteredChunkingMethods().length === 0" disabled>
+                No methods found
+              </mat-option>
+            </ng-container>
+
+            <ng-template #loadingMethods>
+              <mat-option disabled>
+                <app-loader [diameter]="16" />
+              </mat-option>
+            </ng-template>
+          </mat-select>
+          <mat-error *ngIf="chunkingMethodControl.hasError('required')">
+            Please select a chunking method
+          </mat-error>
+        </mat-form-field>
+      </div>
+
+      <!-- ── Pipeline Selection (conditional) ─────────────────────── -->
+      <div class="dataset-form__field" *ngIf="isPipeline">
+        <label class="dataset-form__label dataset-form__label--required">
+          Pipeline
+          <a class="dataset-form__external-link" href="/pipelines" target="_blank">
+            Build it from scratch
+            <mat-icon class="dataset-form__external-icon">open_in_new</mat-icon>
+          </a>
+        </label>
+
+        <mat-form-field appearance="outline" class="dataset-form__control">
+          <mat-select formControlName="pipelineId" placeholder="Please select a pipeline.">
+            <mat-option
+              *ngFor="let pipeline of pipelines(); trackBy: trackById"
+              [value]="pipeline.id"
+            >
+              {{ pipeline.name }}
+            </mat-option>
+            <mat-option *ngIf="pipelines().length === 0" disabled>
+              No pipelines available
+            </mat-option>
+          </mat-select>
+          <mat-error *ngIf="pipelineIdControl.hasError('required')">
+            Please select a pipeline
+          </mat-error>
+        </mat-form-field>
+      </div>
+    </form>
+  </mat-dialog-content>
+
+  <!-- ── Footer ───────────────────────────────────────────────────── -->
+  <mat-dialog-actions class="dataset-modal__footer" align="end">
+    <button
+      mat-flat-button
+      class="dataset-modal__save-btn"
+      [disabled]="form.invalid || isSubmitting()"
+      (click)="onSave()"
+    >
+      <ng-container *ngIf="!isSubmitting(); else savingState"> Save </ng-container>
+      <ng-template #savingState>
+        <mat-spinner diameter="18" class="dataset-modal__spinner" />
+        Saving…
+      </ng-template>
+    </button>
+  </mat-dialog-actions>
+</div>

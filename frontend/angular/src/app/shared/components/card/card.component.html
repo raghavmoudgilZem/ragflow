@@ -1,0 +1,82 @@
+<mat-card
+  class="card"
+  (click)="onCardClick()"
+  (keypress)="onKeyPress($event)"
+  tabindex="0"
+  role="button"
+  [attr.aria-label]="'Open ' + data.title"
+>
+  <mat-card-content class="card-content">
+    <!-- Avatar Section -->
+    <div class="avatar-section">
+      <ng-content select="[avatar]"></ng-content>
+
+      <!-- Default avatar if no custom avatar provided -->
+      @if (!hasAvatarContent()) {
+        @if (data.avatar) {
+          <div class="avatar-container">
+            <img [src]="data.avatar" [alt]="data.title" class="avatar-image" />
+          </div>
+        } @else {
+          <div class="avatar-fallback">
+            <span class="avatar-initials">{{ getInitials() }}</span>
+          </div>
+        }
+      }
+    </div>
+
+    <!-- Content Section -->
+    <div class="content-section">
+      <!-- Header -->
+      <div class="card-header">
+        <div class="title-container">
+          <div class="title-with-icon">
+            <h3 class="card-title">{{ data.title }}</h3>
+            <ng-content select="[titleIcon]"></ng-content>
+          </div>
+        </div>
+
+        <!-- More Options Menu -->
+        @if (showMenu && menuActions.length > 0) {
+          <button
+            mat-icon-button
+            class="menu-button"
+            [matMenuTriggerFor]="moreMenu"
+            (click)="onMenuClick($event)"
+            aria-label="More options"
+          >
+            <mat-icon>more_vert</mat-icon>
+          </button>
+
+          <mat-menu #moreMenu="matMenu" panelClass="card-menu">
+            @for (action of menuActions; track action.action) {
+              <button
+                mat-menu-item
+                (click)="onMenuAction($event, action.action)"
+                [class]="action.className"
+              >
+                <span>{{ action.label }}</span>
+                <mat-icon>{{ action.icon }}</mat-icon>
+              </button>
+            }
+          </mat-menu>
+        }
+      </div>
+
+      <!-- Description -->
+      @if (data.description) {
+        <div class="description">
+          {{ data.description }}
+        </div>
+      }
+
+      <!-- Custom Content Projection -->
+      <ng-content select="[content]"></ng-content>
+
+      <!-- Footer Info -->
+      <div class="card-footer">
+        <ng-content select="[footer]"></ng-content>
+      </div>
+    </div>
+  </mat-card-content>
+</mat-card>

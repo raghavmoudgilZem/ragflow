@@ -1,0 +1,91 @@
+<mat-toolbar class="lpl-header">
+  <div class="lpl-title-section">
+    <ng-content select="[breadcrumb]"></ng-content>
+    @if (title) {
+      <h2 class="lpl-title">{{ title }}</h2>
+    }
+    @if (subtitle) {
+      <p class="lpl-subtitle">{{ subtitle }}</p>
+    }
+  </div>
+
+  <span class="lpl-spacer"></span>
+
+  <div class="lpl-actions">
+    @if (filterConfig) {
+      <div class="filter-wrapper">
+        <button
+          mat-icon-button
+          [class.filter-active]="hasActiveFilters"
+          (click)="toggleFilterPanel()"
+          aria-label="Filter options"
+        >
+          <mat-icon>filter_alt</mat-icon>
+          @if (activeFilterCount > 0) {
+            <span class="filter-badge">{{ activeFilterCount }}</span>
+          }
+        </button>
+
+        @if (filterPanelOpen) {
+          <div class="filter-panel-container">
+            <app-multi-select-filter-panel
+              [config]="filterConfig"
+              [initialFilters]="appliedFilters"
+              (filtersApplied)="onFiltersApplied($event)"
+              (panelClosed)="onFilterPanelClosed()"
+            ></app-multi-select-filter-panel>
+          </div>
+        }
+      </div>
+    }
+
+    @if (filterPanelOpen) {
+      <div
+        class="filter-panel-backdrop"
+        (click)="onFilterPanelClosed()"
+        (keydown.escape)="onFilterPanelClosed()"
+        role="button"
+        tabindex="-1"
+        aria-label="Close filter panel"
+      ></div>
+    }
+
+    <mat-form-field class="lpl-search" appearance="outline" subscriptSizing="dynamic">
+      <mat-icon matPrefix>search</mat-icon>
+      <input
+        matInput
+        [value]="searchValue"
+        (input)="onSearchChange($event)"
+        placeholder="Search"
+        aria-label="Search"
+      />
+    </mat-form-field>
+
+    <ng-content select="[actions]"></ng-content>
+  </div>
+</mat-toolbar>
+
+@if (selectedCount > 0) {
+  <mat-toolbar class="lpl-bulk-bar">
+    <span class="bulk-count"> Selected: {{ selectedCount }} Files </span>
+
+    <mat-divider [vertical]="true" class="bulk-divider"></mat-divider>
+
+    <div class="bulk-actions">
+      @for (action of bulkActions; track action.id) {
+        <button mat-stroked-button [class.danger]="action.danger" (click)="action.onClick()">
+          <mat-icon>{{ action.icon }}</mat-icon>
+          {{ action.label }}
+        </button>
+      }
+    </div>
+  </mat-toolbar>
+}
+
+<div class="lpl-content">
+  @if (isEmpty) {
+    <app-empty-state [message]="emptyMessage"></app-empty-state>
+  } @else {
+    <ng-content></ng-content>
+  }
+</div>

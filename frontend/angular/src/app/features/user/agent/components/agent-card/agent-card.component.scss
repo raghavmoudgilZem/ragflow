@@ -1,0 +1,31 @@
+@use '../../../../../shared/styles/mixins';
+
+.canvas-icon {
+  @include mixins.icon-button(28px);
+  color: var(--text-secondary);
+  padding: 0;
+
+  ::ng-deep .mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    line-height: 18px;
+  }
+}
+
+.footer-row {
+  @include mixins.flex-row(8px);
+  justify-content: space-between;
+}
+
+.timestamp {
+  font-size: 13px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  flex: 0 0 auto;
+  opacity: 0.8;
+}
+
+.owner-badge {
+  @include mixins.badge;
+}

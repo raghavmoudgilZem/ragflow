@@ -1,0 +1,75 @@
+<div class="filter-panel">
+  <!-- Header with search -->
+  <div class="filter-panel-header">
+    <h3 class="filter-panel-title">Filters</h3>
+    @if (activeFilterCount() > 0) {
+      <button mat-button class="clear-all-btn" (click)="clearAll()">Clear all</button>
+    }
+  </div>
+
+  <!-- Search within filter -->
+  <div class="filter-search">
+    <mat-form-field appearance="outline" class="filter-search-field">
+      <mat-icon matPrefix>search</mat-icon>
+      <input
+        matInput
+        placeholder="Search filters..."
+        [(ngModel)]="filterSearch"
+        (ngModelChange)="filterSearch.set($event)"
+      />
+    </mat-form-field>
+  </div>
+
+  <mat-divider></mat-divider>
+
+  <!-- Filter categories -->
+  <div class="filter-categories">
+    <mat-accordion multi>
+      @for (category of filteredCategories(); track category.id) {
+        <mat-expansion-panel [expanded]="category.expanded !== false">
+          <mat-expansion-panel-header>
+            <mat-panel-title>
+              {{ category.label }}
+              @if (selectedFilters()[category.id]?.length) {
+                <span class="category-count">({{ selectedFilters()[category.id].length }})</span>
+              }
+            </mat-panel-title>
+          </mat-expansion-panel-header>
+
+          <div class="category-options">
+            @for (option of category.options; track option.value) {
+              <div class="filter-option">
+                <mat-checkbox
+                  [checked]="isOptionSelected(category.id, option.value)"
+                  (change)="toggleOption(category.id, option.value, category.multiSelect !== false)"
+                >
+                  <span class="option-label">{{ option.label }}</span>
+                  @if (option.count !== undefined) {
+                    <span class="option-count">({{ option.count }})</span>
+                  }
+                </mat-checkbox>
+              </div>
+            } @empty {
+              <div class="no-options">No matching options</div>
+            }
+          </div>
+        </mat-expansion-panel>
+      } @empty {
+        <div class="no-results">No filters match your search</div>
+      }
+    </mat-accordion>
+  </div>
+
+  <mat-divider></mat-divider>
+
+  <!-- Footer with actions -->
+  <div class="filter-panel-footer">
+    <button mat-stroked-button (click)="cancel()">Cancel</button>
+    <button mat-flat-button class="apply-btn" (click)="applyFilters()">
+      Apply
+      @if (activeFilterCount() > 0) {
+        <span>({{ activeFilterCount() }})</span>
+      }
+    </button>
+  </div>
+</div>

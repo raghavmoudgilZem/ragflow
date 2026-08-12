@@ -1,0 +1,42 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum LLMStatus {
+  ACTIVE
+  INACTIVE
+  DEPRECATED
+}
+
+model LLMFactory {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  logo      String?
+  tags      String
+  status    LLMStatus
+  rank      Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  llms      LLM[]
+}
+
+model LLM {
+  id          String     @id @default(uuid())
+  llm_name    String
+  tags        String
+  max_tokens  Int
+  model_type  String
+  is_tools    Boolean
+  factoryId   String
+  factory     LLMFactory @relation(fields: [factoryId], references: [id])
+
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@unique([llm_name, factoryId])
+}

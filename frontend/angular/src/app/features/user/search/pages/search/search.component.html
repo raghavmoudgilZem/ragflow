@@ -1,0 +1,188 @@
+<div class="search-page-container">
+  @if (!isLoading()) {
+    @if (searchApps().length > 0) {
+      <header class="search-header">
+        <div class="header-left">
+          <mat-icon class="search-title-icon">search</mat-icon>
+          <h2 class="search-title-text">Search apps</h2>
+        </div>
+
+        <div class="header-right">
+          <div class="search-filter-box">
+            <mat-icon>search</mat-icon>
+            <input
+              type="text"
+              placeholder="Search"
+              [value]="searchFilter()"
+              (input)="searchFilter.set($any($event.target).value)"
+            />
+          </div>
+
+          <button class="create-btn" (click)="openCreateModal()">
+            <mat-icon>add</mat-icon>
+            <span>Create search</span>
+          </button>
+        </div>
+      </header>
+
+      @if (filteredApps().length === 0) {
+        <div class="empty-state-container">
+          <div class="not-found-card">
+            <mat-icon class="not-found-icon">search</mat-icon>
+            <span class="not-found-text">Search app not found</span>
+          </div>
+        </div>
+      } @else {
+        <div class="apps-grid">
+          @for (app of filteredApps(); track app.id) {
+            <div class="app-card" (click)="navigateToDetail(app.id)">
+              <div class="card-avatar">
+                <span>{{ getInitial(app.name) }}</span>
+              </div>
+
+              <div class="card-content">
+                <div class="card-header-row">
+                  <h3 class="app-name">{{ app.name }}</h3>
+                  <button
+                    class="menu-btn"
+                    [matMenuTriggerFor]="appMenu"
+                    (click)="$event.stopPropagation()"
+                  >
+                    <mat-icon>more_horiz</mat-icon>
+                  </button>
+                </div>
+
+                <p class="app-description">
+                  {{ app.description || 'You are an intelligent assistant.' }}
+                </p>
+                <span class="app-time">{{ formatDate(app.create_time) }}</span>
+              </div>
+
+              <mat-menu #appMenu="matMenu" panelClass="dark-context-menu">
+                <button mat-menu-item (click)="openRenameModal(app, $event)">
+                  <mat-icon>edit</mat-icon>
+                  <span>Rename</span>
+                </button>
+                <button
+                  mat-menu-item
+                  class="delete-item"
+                  (click)="openDeleteModal(app, $event)"
+                >
+                  <mat-icon>delete_outline</mat-icon>
+                  <span>Delete</span>
+                </button>
+              </mat-menu>
+            </div>
+          }
+        </div>
+      }
+
+      @if (filteredApps().length > 0) {
+        <footer class="page-footer">
+          <span class="total-label">Total {{ filteredApps().length }}</span>
+
+          <div class="pagination-controls">
+            <button class="page-nav-btn" [disabled]="currentPage() === 1">
+              <mat-icon>chevron_left</mat-icon>
+            </button>
+            <span class="current-page-badge">{{ currentPage() }}</span>
+            <button class="page-nav-btn">
+              <mat-icon>chevron_right</mat-icon>
+            </button>
+          </div>
+
+          <div class="page-size-selector">
+            <mat-select [value]="pageSize()" class="compact-select">
+              <mat-option [value]="50">50 / Page</mat-option>
+              <mat-option [value]="100">100 / Page</mat-option>
+            </mat-select>
+          </div>
+        </footer>
+      }
+    } @else {
+      <div class="empty-state-container">
+        <div class="empty-card" (click)="openCreateModal()">
+          <mat-icon class="search-icon">search</mat-icon>
+          <span class="empty-text">No search app created yet</span>
+          <mat-icon class="plus-icon">add</mat-icon>
+        </div>
+      </div>
+    }
+  }
+
+  @if (isCreateModalOpen()) {
+    <div class="modal-backdrop" (click)="closeCreateModal()">
+      <div class="modal-box" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3>Create Search App</h3>
+          <button class="close-btn" (click)="closeCreateModal()">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+        <div class="modal-body">
+          <label>App Name</label>
+          <input
+            type="text"
+            placeholder="Please input name"
+            [value]="appNameInput()"
+            (input)="appNameInput.set($any($event.target).value)"
+            (keyup.enter)="submitCreate()"
+          />
+        </div>
+        <div class="modal-footer">
+          <button class="btn-cancel" (click)="closeCreateModal()">Cancel</button>
+          <button class="btn-save" (click)="submitCreate()">Save</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  @if (isRenameModalOpen()) {
+    <div class="modal-backdrop" (click)="closeRenameModal()">
+      <div class="modal-box" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3>Rename App</h3>
+          <button class="close-btn" (click)="closeRenameModal()">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+        <div class="modal-body">
+          <label>App Name</label>
+          <input
+            type="text"
+            [value]="appNameInput()"
+            (input)="appNameInput.set($any($event.target).value)"
+            (keyup.enter)="submitRename()"
+          />
+        </div>
+        <div class="modal-footer">
+          <button class="btn-cancel" (click)="closeRenameModal()">Cancel</button>
+          <button class="btn-save" (click)="submitRename()">Save</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  @if (isDeleteModalOpen()) {
+    <div class="modal-backdrop" (click)="closeDeleteModal()">
+      <div class="modal-box" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3>Delete App</h3>
+          <button class="close-btn" (click)="closeDeleteModal()">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+        <div class="modal-body">
+          <p>Are you sure you want to delete this search app?</p>
+          <div class="delete-target-badge">
+            <span>{{ selectedApp()?.name }}</span>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-cancel" (click)="closeDeleteModal()">Cancel</button>
+          <button class="btn-delete" (click)="submitDelete()">Delete</button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

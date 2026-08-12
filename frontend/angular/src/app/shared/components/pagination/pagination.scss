@@ -1,0 +1,36 @@
+.custom-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--text-secondary);
+  padding: 10px 0 0 10px;
+
+  .total-text {
+    font-size: 13px;
+  }
+
+  mat-paginator {
+    background: transparent;
+    --mat-paginator-container-background-color: transparent;
+    --mat-paginator-container-text-color: var(--text-secondary);
+    --mat-paginator-enabled-icon-color: var(--text-primary);
+    --mat-paginator-disabled-icon-color: var(--text-badge);
+    --mat-select-trigger-text-color: var(--text-primary);
+  }
+
+  ::ng-deep .mat-mdc-paginator .mat-mdc-select {
+    color: var(--text-primary);
+  }
+
+  ::ng-deep .mat-mdc-paginator-page-size .mat-mdc-select-value {
+    color: var(--text-primary);
+  }
+
+  ::ng-deep .mat-mdc-paginator-range-label {
+    color: var(--text-secondary);
+  }
+
+  ::ng-deep .mat-mdc-paginator-navigation {
+    color: var(--text-primary);
+  }
+}

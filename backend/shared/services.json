@@ -1,0 +1,9 @@
+{
+  "Services": {
+    "IdentityService": "http://identity-service:3000",
+    "AdminService": "http://admin-auth-service:3000",
+    "DatasetService": "http://dataset-service:3000",
+    "DocumentService": "http://document-service:3000",
+    "ParserService": "http://parser-service:3000"
+  }
+}
