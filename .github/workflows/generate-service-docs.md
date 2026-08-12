@@ -1,11 +1,10 @@
-cat << 'EOF' > .github/workflows/generate-service-docs.md
 ---
 name: Generate Microservice Documentation
 on:
   workflow_dispatch:
     inputs:
       service_path:
-        description: "Path to the microservice (e.g., backend/node-services/identity-service)"
+        description: "Path to the microservice"
         required: true
 engine: copilot
 permissions:
@@ -24,4 +23,3 @@ You are an Expert Technical Writer. Your task is to analyze `${{ github.event.in
 3. **Generate Core Index:** Create `docs/index.md`. Include a high-level description, dependencies, and a `mermaid` Flowchart architecture map.
 4. **Generate Specialized Pages:** Create `docs/api-reference.md` (if APIs exist) and `docs/config.md` (for env vars). Use exact values from `FACTS.md`.
 5. **Action:** Open a Pull Request titled "docs: generate documentation for [Service Name]".
-EOF
