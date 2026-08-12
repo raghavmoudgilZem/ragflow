@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Ragflow.Identity.Domain\Ragflow.Identity.Domain.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+   <PackageReference Include="MassTransit" Version="8.5.5" />
+<PackageReference Include="MassTransit.RabbitMQ" Version="8.5.5" />
+    <PackageReference Include="StackExchange.Redis" Version="2.13.17" />
+  </ItemGroup>
+
+</Project>

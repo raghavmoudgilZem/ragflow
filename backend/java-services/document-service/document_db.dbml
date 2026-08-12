@@ -1,0 +1,218 @@
+// Use DBML to define your database structure
+// Docs: https://dbml.dbdiagram.io/docs
+
+Table document {
+  id uuid [pk]
+  thumbnail text
+
+  kb_id uuid [not null]
+  parser_id varchar(32) [not null]
+  pipeline_id uuid
+
+  parser_config json [not null]
+
+  source_type varchar(128) [not null, default: 'local']
+  type varchar(32) [not null]
+
+  created_by uuid [not null]
+
+  name varchar(255)
+  location varchar(255)
+
+  size int [not null, default: 0]
+  token_num int [not null, default: 0]
+  chunk_num int [not null, default: 0]
+
+  progress float [not null, default: 0.0]
+  progress_msg text
+
+  process_begin_at datetime
+  process_duration float [not null, default: 0.0]
+
+  meta_fields json
+
+  suffix varchar(32) [not null, default: '']
+
+  run int [not null, default: 0]
+  status int [not null, default: 1]
+
+  indexes {
+    kb_id [name: "idx_doc_kb_id"]
+    parser_id [name: "idx_doc_parser_id"]
+    pipeline_id [name: "idx_doc_pipeline_id"]
+    status [name: "idx_doc_status"]
+  }
+}
+
+Table file_2_document {
+  id uuid [pk, not null]
+
+  file_id uuid
+  document_id uuid
+
+  indexes {
+    file_id [name: "idx_f2d_file_id"]
+    document_id [name: "idx_f2d_document_id"]
+  }
+}
+
+Table pipeline_operation_log {
+  id uuid [pk]
+
+  document_id uuid
+
+  tenant_id uuid [not null]
+  kb_id uuid [not null]
+  pipeline_id uuid
+
+  pipeline_title varchar(32)
+
+  parser_id varchar(32) [not null]
+
+  document_name varchar(255) [not null]
+  document_suffix varchar(255) [not null]
+  document_type varchar(255) [not null]
+
+  source_from varchar(255) [not null]
+
+  progress float [not null, default: 0.0]
+  progress_msg text
+
+  process_begin_at datetime
+  process_duration float [not null, default: 0.0]
+
+  dsl json [default: '{}']
+
+  task_type varchar(32) [not null, default: '']
+
+  operation_status varchar(32) [not null]
+
+  avatar text
+
+  status int [not null, default: 1]
+
+  indexes {
+    document_id [name: "idx_pipeline_op_document_id"]
+    tenant_id [name: "idx_pipeline_op_tenant_id"]
+    kb_id [name: "idx_pipeline_op_kb_id"]
+    pipeline_id [name: "idx_pipeline_op_pipeline_id"]
+    status [name: "idx_pipeline_op_status"]
+  }
+}
+
+Table task {
+  id uuid [pk, not null]
+
+  doc_id uuid [not null]
+
+  from_page int [not null, default: 0]
+  to_page int [not null, default: 100000000]
+
+  task_type varchar(32) [not null, default: '']
+
+  priority int [not null, default: 0]
+
+  begin_at datetime
+
+  process_duration float [not null, default: 0.0]
+
+  progress float [not null, default: 0.0]
+
+  progress_msg text
+
+  retry_count int [not null, default: 0]
+
+  digest text [default: '']
+
+  chunk_ids text [default: '']
+
+  indexes {
+    doc_id [name: "idx_task_doc_id"]
+    begin_at [name: "idx_task_begin_at"]
+    progress [name: "idx_task_progress"]
+  }
+}
+
+Ref: file_2_document.document_id > document.id
+
+Ref: pipeline_operation_log.document_id > document.id
+
+Ref: task.doc_id > document.id
+
+Records document (
+    id,
+    thumbnail,
+    kb_id,
+    parser_id,
+    pipeline_id,
+    parser_config,
+    source_type,
+    type,
+    created_by,
+    name,
+    location,
+    size,
+    token_num,
+    chunk_num,
+    progress,
+    progress_msg,
+    process_begin_at,
+    process_duration,
+    meta_fields,
+    suffix,
+    run,
+    status
+) {
+    '9fdf695f872611f18dd276a5e2e3c883', 'thumbnail_9fdf695f872611f18dd276a5e2e3c883.png', '3d5795117a9211f1b0a0e2c726cbd5c8', 'naive', NULL, '{"layout_recognize":"DeepDOC","chunk_token_num":441,"delimiter":"\n","enable_children":false,"children_delimiter":"","auto_keywords":5,"auto_questions":4,"html4excel":false,"topn_tags":3,"toc_extraction":true,"image_table_context_window":40,"overlapped_percent":0,"mineru_parse_method":"auto","mineru_formula_enable":true,"mineru_table_enable":true,"mineru_lang":"English","graphrag":{"use_graphrag":true,"entity_types":["organization","person","geo","event","category"],"method":"light"},"metadata":[{"key":"document","description":"one of the service in RAG microservices","enum":[]}],"enable_metadata":true,"llm_id":"llama3.2@Ollama","image_context_size":40,"table_context_size":40,"task_page_size":12,"entity_types":[],"pages":[[1,1024]]}', 'local', 'pdf', '5e869f637a8d11f190c1e2c726cbd5c8', 'LLD document microservice.pdf', 'LLD document microservice.pdf', 498734, 384, 2, 0.8, '18:38:16 Task has been received. 18:39:47 Page(1~31): Start to parse. 18:39:48 Page(1~31): OCR started   18:41:20 Page(1~31): Processing...   18:42:12 Page(1~31): Processing...   18:43:03 Page(1~31): Processing...   18:43:57 Page(1~31): Processing...   18:44:59 Page(1~31): OCR finished (310.83s)   18:48:20 Page(1~31): Layout analysis (201.21s)   18:48:34 Page(1~31): Table analysis (14.01s)   18:48:38 Page(1~31): Text merged (3.43s)   18:48:40 Page(1~31): Finish parsing.   18:48:44 Page(1~31): Start to generate keywords for every chunk ...   19:01:45 Keywords generation 45 chunks completed in 781.27s   19:01:45 Start to generate questions for every chunk ...   19:23:02 Question generation 45 chunks completed in 1276.52s   19:23:02 Start to generate meta-data for every chunk ...', '2026-07-24 18:38:14', 29897.5, '{"document":"DocumentService","type":"object","response_body":"Image retrieved.","content_type":"image/JPEG","description":"Document","microservice":["Document"],"API":["create","upload"]}', 'pdf', 1, 1
+}
+
+Records file_2_document(
+    id,
+    file_id,
+    document_id
+) {
+    'a006b49f872611f1949476a5e2e3c883','a00630e6872611f1949576a5e2e3c883','9fdf695f872611f18dd276a5e2e3c883'
+}
+
+Records pipeline_operation_log(
+    id,
+    document_id,
+    tenant_id,
+    kb_id,
+    pipeline_id,
+    pipeline_title,
+    parser_id,
+    document_name,
+    document_suffix,
+    document_type,
+    source_from,
+    progress,
+    progress_msg,
+    process_begin_at,
+    process_duration,
+    dsl,
+    task_type,
+    operation_status,
+    avatar,
+    status
+) {
+    '405bf500872711f1b5fe76a5e2e3c883','9fdf695f872611f18dd276a5e2e3c883','5e869f637a8d11f190c1e2c726cbd5c8','3d5795117a9211f1b0a0e2c726cbd5c8','','laws','laws','LLD document microservice.pdf','pdf','pdf','local',-1,'14:12:20 Task has been received.\n14:12:20 Page(1~13): Start to parse.\n14:12:20 Page(1~13): OCR started\n14:12:56 Page(1~13): Processing...\n14:13:21 Page(1~13): Processing...\n14:13:21 Page(1~13): OCR finished (60.78s)\n14:14:05 Page(1~13): Layout analysis (43.77s)\n14:14:05 Page(1~13): Text extraction (43.80s)\n14:14:05 Page(1~13): Finish parsing.\n14:14:05 Page(1~13): Generate 8 chunks\n14:14:14 Page(1~13): [ERROR]Generate embedding error:the input length exceeds the context length (status code: 500)\n14:14:14 [ERROR][Exception]: the input length exceeds the context length (status code: 500)\n\n14:12:20 Task has been received.\n14:14:05 Page(13~25): Start to parse.\n14:14:05 Page(13~25): OCR started\n14:14:43 Page(13~25): Processing...\n14:15:09 Page(13~25): Processing...\n14:15:09 Page(13~25): OCR finished (63.30s)\n14:15:46 Page(13~25): Layout analysis (37.47s)\n14:15:46 Page(13~25): Text extraction (37.49s)\n14:15:46 Page(13~25): Finish parsing.\n14:15:47 Page(13~25): Generate 2 chunks\n14:15:48 Page(13~25): [ERROR]Generate embedding error:the input length exceeds the context length (status code: 500)\n14:15:48 [ERROR][Exception]: the input length exceeds the context length (status code: 500)\n\n14:12:23 Task has been received.\n14:15:47 Page(25~31): Start to parse.\n14:15:47 Page(25~31): OCR started\n14:16:16 Page(25~31): Processing...\n14:16:16 Page(25~31): OCR finished (29.35s)\n14:16:36 Page(25~31): Layout analysis (19.55s)\n14:16:36 Page(25~31): Text extraction (19.57s)\n14:16:36 Page(25~31): Finish parsing.\n14:16:36 Page(25~31): Generate 2 chunks\n14:16:47 Page(25~31): Embedding chunks (11.06s)\n14:16:47 Page(25~31): Indexing done (0.08s).\n14:16:47 Page(25~31): Task done (264.39s)','2026-07-24 14:12:19',268.833,'{}','Parse','4','thumbnail_9fdf695f872611f18dd276a5e2e3c883.png',1
+}
+
+Records task(
+    id,
+    doc_id,
+    from_page,
+    to_page,
+    task_type,
+    priority,
+    begin_at,
+    process_duration,
+    progress,
+    progress_msg,
+    retry_count,
+    digest,
+    chunk_ids
+) {
+    'c5f541a6874b11f1817d76a5e2e3c883', '9fdf695f872611f18dd276a5e2e3c883', 0, 30, '', 0, '2026-07-24 18:38:13', 2689.16, 0.8, '18:38:16 Task has been received.\n18:39:47 Page(1~31): Start to parse.\n18:39:48 Page(1~31): OCR started\n18:41:20 Page(1~31): Processing...\n18:42:12 Page(1~31): Processing...\n18:43:03 Page(1~31): Processing...\n18:43:57 Page(1~31): Processing...\n18:44:59 Page(1~31): Processing...\n18:44:59 Page(1~31): OCR finished (310.83s)\n18:48:20 Page(1~31): Layout analysis (201.21s)\n18:48:34 Page(1~31): Table analysis (14.01s)\n18:48:38 Page(1~31): Text merged (3.43s)\n18:48:40 Page(1~31): Finish parsing.\n18:48:44 Page(1~31): Start to generate keywords for every chunk ...\n19:01:45 Page(1~31): Keywords generation 45 chunks completed in 781.27s\n19:01:45 Page(1~31): Start to generate questions for every chunk ...\n19:23:02 Page(1~31): Question generation 45 chunks completed in 1276.52s\n19:23:02 Page(1~31): Start to generate meta-data for every chunk ...', 1, 'ee76ba6c5a1e521a', ''
+}

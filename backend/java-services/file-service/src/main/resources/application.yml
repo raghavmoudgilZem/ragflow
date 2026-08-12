@@ -1,0 +1,33 @@
+server:
+  port: 8084
+
+spring:
+  profiles:
+    active: local
+  application:
+    name: file-service
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+logging:
+  level:
+    com.ragflow.file: INFO
+
+
+storage:
+  type: LOCAL #S3,MINIO
+  local:
+    path: D:/ragflow
+  s3:
+    bucket: ragflow
+    region: ap-south-1
+
+  minio:
+    endpoint: http://localhost:9000
+    accessKey: rag_flow
+    secretKey: infini_rag_flow
+    bucket: rag-file

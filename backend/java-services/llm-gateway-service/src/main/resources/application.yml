@@ -1,0 +1,65 @@
+server:
+  port: 8085
+
+spring:
+  application:
+    name: llm-gateway-service
+
+  jackson:
+    default-property-inclusion: non_null
+
+  datasource:
+    url: jdbc:mysql://${MYSQL_HOST:mysql}:${MYSQL_PORT:3306}/${MYSQL_LLM_GATEWAY_DBNAME:llm_gateway}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=UTF-8&createDatabaseIfNotExist=true
+    username: root
+    password: ${MYSQL_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 10
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+  jpa:
+    hibernate:
+      ddl-auto: validate   # schema is owned by Flyway migrations (src/main/resources/db/migration)
+    open-in-view: false
+    properties:
+      hibernate:
+        show_sql: false
+        format_sql: true
+
+  data:
+    redis:
+      # Shared platform Redis (see docker/docker-compose-base.yml).
+      host: ${REDIS_HOST:redis}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD}
+
+  cache:
+    type: redis
+    redis:
+      time-to-live: 60s
+
+# Catalog seeding is owned by the R__seed_catalog.sql Flyway migration — no configurable resource
+# path here anymore (see db/migration/).
+llm:
+  rate-limit:
+    enabled: true
+    requests-per-minute: 100
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+logging:
+  level:
+    com.ragflow.llmgateway: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%X{correlationId:-}] [%thread] %logger{36} - %msg%n"

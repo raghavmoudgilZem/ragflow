@@ -1,0 +1,22 @@
+spring:
+  application:
+    name: file-service
+
+  datasource:
+    url: jdbc:mysql://${MYSQL_HOST:mysql}:${MYSQL_PORT:3306}/${MYSQL_FILESYSTEM_DBNAME:file_system}?useSSL=false&serverTimezone=UTC&characterEncoding=UTF-8
+    username: root
+    password: ${MYSQL_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+    hikari:
+      maximum-pool-size: 10
+
+  jpa:
+    hibernate:
+      ddl-auto: update   # use update while developing
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+        show_sql: true
+      dialect: org.hibernate.dialect.MySQLDialect

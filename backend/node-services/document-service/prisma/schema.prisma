@@ -1,0 +1,99 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+enum DocumentSource {
+  manual_upload
+}
+
+enum IngestStatus {
+  pending
+  in_queue
+  in_progress
+  completed
+  failed
+  cancelled
+}
+
+model Document {
+  id String @id @default(uuid(7)) @db.Char(36)
+
+  // Cross-service refs — deliberately NOT relations.
+  kbId        String @map("kb_id") @db.Char(36)
+  fileId      String @map("file_id") @db.Char(36)
+  workspaceId String @map("workspace_id") @db.Char(36)
+
+  active        Boolean @default(true)
+  chunks        Int     @default(0)
+  name          String  @db.VarChar(512)
+  fileSizeBytes BigInt  @map("file_size_bytes")
+  fileType      String  @map("file_type") @db.VarChar(64)
+  parseType     String  @map("parse_type") @db.VarChar(64)
+
+  source                   DocumentSource? @default(manual_upload)
+  ingestStatus             IngestStatus    @default(pending) @map("ingest_status")
+  ingestProgressPercentage Float?          @map("ingest_progress_percentage") @db.Double
+
+  uploadedBy String    @map("uploaded_by") @db.Char(36)
+  uploadedAt DateTime? @map("uploaded_at") @db.DateTime(3)
+  archivedBy String?   @map("archived_by") @db.Char(36)
+  archivedAt DateTime? @map("archived_at") @db.DateTime(3)
+
+  createdAt DateTime @default(now()) @map("created_at") @db.DateTime(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.DateTime(3)
+
+  ingestionOps IngestionOp[]
+
+  @@unique([kbId, fileId], map: "kb_fl_idx")
+  @@index([workspaceId, kbId, ingestStatus], map: "ws_kb_ing_status_idx")
+  @@index([fileId], map: "file_idx")
+  @@map("document")
+}
+
+model IngestionOp {
+  id String @id @default(uuid(7)) @db.Char(36)
+
+  documentId String @map("document_id") @db.Char(36)
+  startedBy  String @map("started_by") @db.Char(36)
+
+  startedAt   DateTime?    @map("started_at") @db.DateTime(3)
+  completedAt DateTime?    @map("completed_at") @db.DateTime(3)
+  chunks      Int?
+  status      IngestStatus @default(pending)
+
+  createdAt DateTime @default(now()) @map("created_at") @db.DateTime(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.DateTime(3)
+
+  document Document       @relation(fields: [documentId], references: [id], onDelete: Cascade, map: "fk_ingestion_ops_document")
+  logs     IngestionLog[]
+
+  @@index([documentId, createdAt], map: "doc_create_idx")
+  @@index([documentId, status], map: "doc_ing_status_idx")
+  @@map("ingestion_ops")
+}
+
+model IngestionLog {
+  id String @id @default(uuid(7)) @db.Char(36)
+
+  ingestionOpId String   @map("ingestion_op_id") @db.Char(36)
+  logAt         DateTime @default(now()) @map("log_at") @db.DateTime(3)
+  content       String?  @db.Text
+
+  createdAt DateTime @default(now()) @map("created_at") @db.DateTime(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.DateTime(3)
+
+  ingestionOp IngestionOp @relation(fields: [ingestionOpId], references: [id], onDelete: Cascade, map: "fk_ingestion_logs_op")
+
+  @@index([ingestionOpId, logAt], map: "ing_log_at_idx")
+  @@map("ingestion_logs")
+}

@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="Ragflow.Identity.API/Ragflow.Identity.API.csproj" />
+  <Project Path="Ragflow.Identity.Application/Ragflow.Identity.Application.csproj" />
+  <Project Path="Ragflow.Identity.Domain/Ragflow.Identity.Domain.csproj" />
+  <Project Path="Ragflow.Identity.Infrastructure/Ragflow.Identity.Infrastructure.csproj" />
+</Solution>

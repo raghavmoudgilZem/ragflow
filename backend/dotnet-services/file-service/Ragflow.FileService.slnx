@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="Ragflow.FileService.API/Ragflow.FileService.API.csproj" />
+  <Project Path="Ragflow.FileService.Core/Ragflow.FileService.Core.csproj" />
+  <Project Path="Ragflow.FileService.Domain/Ragflow.FileService.Domain.csproj" />
+  <Project Path="Ragflow.FileService.Infrastructure/Ragflow.FileService.Infrastructure.csproj" />
+  <Project Path="Ragflow.FileService.Tests/Ragflow.FileService.Tests.csproj" />
+</Solution>

@@ -1,0 +1,815 @@
+
+
+openapi: 3.0.3
+info:
+  title: RAGFlow Manager API
+  version: 1.0.0
+  description: API documentation for the RAGFlow manager endpoints.
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Local development server
+tags:
+  - name: Document
+  - name: File2Document
+  - name: Chunk
+paths:
+  /document/upload:
+    post:
+      summary: Upload documents to a knowledge base
+      description: Uploads one or more files to a specific knowledge base dataset. Requires user authentication and validates team permissions.
+      tags:
+        - Document
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - kb_id
+                - file
+              properties:
+                kb_id:
+                  type: string
+                  description: The unique identifier of the knowledge base.
+                  example: "kb-8f7e6d5c"
+                file:
+                  type: array
+                  description: The list of document files to upload. Max filename length is 255 bytes.
+                  items:
+                    type: string
+                    format: binary
+      responses:
+        '200':
+          description: Request processed. Check the `code` property in the response to determine actual success or failure (e.g., Argument Error, Authentication Error, Server Error).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JsonResult'
+              examples:
+                success:
+                  summary: Successful Upload
+                  value:
+                    data: ["file1.pdf", "file2.docx"]
+                    message: "Success"
+                    code: 0
+                argumentError:
+                  summary: Missing KB ID
+                  value:
+                    data: false
+                    message: "Lack of \"KB ID\""
+                    code: 100
+                authError:
+                  summary: Permission Denied
+                  value:
+                    data: false
+                    message: "No authorization."
+                    code: 401
+  /document/create:
+    post:
+      summary: Create a virtual document placeholder
+      description: Creates a new document with type 'VIRTUAL' and 0 size inside the requested Knowledge Base. It initializes directory references without requiring an actual file upload.
+      tags:
+        - Document
+      security:
+        - bearerAuth: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - kb_id
+                - name
+              properties:
+                kb_id:
+                  type: string
+                  description: The unique identifier of the target Knowledge Base.
+                  example: "kb-987abc123"
+                name:
+                  type: string
+                  description: The name of the new virtual document. Maximum 255 bytes.
+                  example: "My_New_Note.txt"
+      responses:
+        '200':
+          description: Standard wrapper. Check `code` for operational status. If successful, `data` contains the document object.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JsonRe2sult'
+              examples:
+                success:
+                  summary: Document created successfully
+                  value:
+                    data:
+                      id: "doc-1234-abcd"
+                      kb_id: "kb-987abc123"
+                      type: "VIRTUAL"
+                      name: "My_New_Note.txt"
+                      size: 0
+                    message: "Success"
+                    code: 0
+                duplicateError:
+                  summary: Document name already exists
+                  value:
+                    data: false
+                    message: "Duplicated document name in the same dataset."
+                    code: 200 # Maps to RetCode.DATA_ERROR internally
+                argumentError:
+                  summary: Missing Name or KB ID
+                  value:
+                    data: false
+                    message: "File name can't be empty."
+                    code: 100 # Maps to RetCode.ARGUMENT_ERROR internally
+  /api/manager/rename:
+    post:
+      summary: Rename a Document
+      description: Safely changes a document's name. Validates that the file extension remains unchanged and that the new name is unique within the Knowledge Base. Requires authentication.
+      tags:
+        - Manager
+      security:
+        - bearerAuth: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - doc_id
+                - name
+              properties:
+                doc_id:
+                  type: string
+                  description: The unique identifier of the target document.
+                  example: "doc-55554444"
+                name:
+                  type: string
+                  description: The desired new name for the document, including the original file extension.
+                  example: "Updated_Report_2024.pdf"
+      responses:
+        '200':
+          description: Standard API wrapper response. Check the `code` field to determine success or failure.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JsonResult'
+              examples:
+                success:
+                  summary: Document Renamed Successfully
+                  value:
+                    data: true
+                    message: "Success"
+                    code: 0
+                extensionError:
+                  summary: Invalid File Extension Change
+                  value:
+                    data: false
+                    message: "The extension of file can't be changed"
+                    code: 100 # Maps to RetCode.ARGUMENT_ERROR
+                duplicateError:
+                  summary: Duplicate Name Conflict
+                  value:
+                    data: false
+                    message: "Duplicated document name in the same dataset."
+                    code: 200 # Maps to RetCode.DATA_ERROR
+  /api/manager/get/{doc_id}:
+    get:
+      summary: Retrieve document file contents
+      description: Looks up a document by its unique ID, maps it to its physical storage location, and returns the raw file stream. The `Content-Type` header is determined dynamically based on the file extension. No authentication is required.
+      tags:
+        - Manager
+      parameters:
+        - name: doc_id
+          in: path
+          required: true
+          description: The unique identifier of the document.
+          schema:
+            type: string
+          example: "doc-9988776655"
+      responses:
+        '200':
+          description: Document successfully found and downloaded. The media type will vary based on the document type (e.g., `image/png`, `application/pdf`).
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: Document, storage mapping, or physical file not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JsonResult'
+              example:
+                data: false
+                message: "Document not found!"
+                code: 200 # Maps to RetCode.DATA_ERROR internally
+        '500':
+          description: Internal Server Error or Storage connectivity issue.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JsonResult'
+              example:
+                data: false
+                message: "Storage connection error"
+                code: 500
+  /api/manager/download/{attachment_id}:
+    get:
+      summary: Download User Attachment
+      description: Retrieves a raw binary file from the user's isolated storage bucket. The response's `Content-Type` is dynamically set based on the `ext` parameter.
+      tags:
+        - Manager
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: attachment_id
+          in: path
+          required: true
+          description: The unique identifier or filename of the attachment within the user's storage.
+          schema:
+            type: string
+          example: "file-99887766"
+        - name: ext
+          in: query
+          required: false
+          description: The file extension used to determine the HTTP `Content-Type` header. Defaults to `markdown`.
+          schema:
+            type: string
+            default: "markdown"
+          example: "pdf"
+      responses:
+        '200':
+          description: The attachment was found and is returned as a binary stream. The `Content-Type` header will match the requested `ext`.
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Unauthorized. User must be logged in.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JsonResult'
+              example:
+                data: false
+                message: "No authorization."
+                code: 401
+        '404':
+          description: Attachment not found in the user's storage space.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JsonResult'
+              example:
+                data: false
+                message: "Attachment not found."
+                code: 200
+        '500':
+          description: Internal Server Error or Storage connectivity issue.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JsonResult'
+              example:
+                data: false
+                message: "Storage connection error"
+                code: 500
+  /api/manager/change_parser:
+    post:
+      summary: Change document parser and purge old data
+      description: Updates the parser rules for a document. If the document was previously processed, this endpoint deletes its chunked text, generated images, and vector database entries to prepare for re-parsing.
+      tags:
+        - Manager
+      security:
+        - bearerAuth: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - doc_id
+              properties:
+                doc_id:
+                  type: string
+                  description: The unique identifier of the target document.
+                  example: "doc-999888"
+                pipeline_id:
+                  type: string
+                  description: (Optional) The new pipeline identifier to assign.
+                  example: "pipe-default"
+                parser_id:
+                  type: string
+                  description: (Optional) The new parser identifier (e.g., `naive`, `qa`, `picture`).
+                  example: "qa"
+                parser_config:
+                  type: object
+                  description: (Optional) A dictionary of configuration options specific to the selected parser.
+                  additionalProperties: true
+                  example: { "chunk_size": 512, "overlap": 50 }
+      responses:
+        '200':
+          description: Standard wrapper. Check the `code` field for status.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JsonResult'
+              examples:
+                success:
+                  summary: Parser Updated Successfully
+                  value:
+                    data: true
+                    message: "Success"
+                    code: 0
+                notSupported:
+                  summary: Invalid Parser Selection
+                  value:
+                    data: false
+                    message: "Not supported yet!"
+                    code: 200 # Maps to RetCode.DATA_ERROR
+                authError:
+                  summary: Unauthorized Access
+                  value:
+                    data: false
+                    message: "No authorization."
+                    code: 401
+  /api/manager/image/{image_id}:
+    get:
+      summary: Retrieve an image
+      description: Fetches raw image data based on a composite ID format (`bucket-filename`). Returns a JPEG binary stream on success, and a JSON error message on failure. Authentication is not required.
+      tags:
+        - Manager
+      parameters:
+        - name: image_id
+          in: path
+          required: true
+          description: The composite image identifier consisting of the storage bucket and file name, separated by a hyphen.
+          schema:
+            type: string
+          example: "thumbnails-doc12345.jpg"
+      responses:
+        '200':
+          description: The requested image was found and is returned as a binary stream.
+          content:
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: The provided `image_id` format was invalid (e.g., missing the hyphen).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JsonResult'
+              example:
+                data: false
+                message: "Image not found."
+                code: 200 # Maps to RetCode.DATA_ERROR
+        '404':
+          description: The image was not found in the storage bucket.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JsonResult'
+              example:
+                data: false
+                message: "Image not found."
+                code: 200
+        '500':
+          description: An internal server error or storage connection failure occurred.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JsonResult'
+              example:
+                data: false
+                message: "Storage connection timeout"
+                code: 500
+  /api/manager/upload_and_parse:
+    post:
+      summary: Upload and parse files for a conversation
+      description: Validates and processes uploaded files, linking the resulting parsed documents to the provided `conversation_id`. Requires authentication.
+      tags:
+        - Manager
+      security:
+        - bearerAuth: [ ]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - conversation_id
+                - file
+              properties:
+                conversation_id:
+                  type: string
+                  description: The unique identifier of the active chat conversation.
+                  example: "conv-998877"
+                file:
+                  type: array
+                  description: A list of files to upload and parse.
+                  items:
+                    type: string
+                    format: binary
+      responses:
+        '200':
+          description: Standard wrapper. Check the `code` field for status. On success, `data` contains a list of created document IDs.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Json3Result'
+              examples:
+                success:
+                  summary: Files Uploaded and Parsed
+                  value:
+                    data: [ "doc-111", "doc-222" ]
+                    message: "Success"
+                    code: 0
+                argumentErrorId:
+                  summary: Missing Conversation ID
+                  value:
+                    data: false
+                    message: "Lack of \"conversation_id\""
+                    code: 100
+                argumentErrorFile:
+                  summary: Missing Files
+                  value:
+                    data: false
+                    message: "No file part!"
+                    code: 100
+  /api/manager/parse:
+    post:
+      summary: Parse Text from URL or File
+      description: Acts in two modes. If `url` is provided, a headless browser extracts text or downloads the linked file. Otherwise, it directly parses the uploaded `file`. Requires authentication.
+      tags:
+        - Manager
+      security:
+        - bearerAuth: [ ]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                url:
+                  type: string
+                  format: uri
+                  description: (Optional) The URL to crawl. If provided, file uploads may be ignored.
+                  example: "https://en.wikipedia.org/wiki/Retrieval-augmented_generation"
+                file:
+                  type: array
+                  description: (Optional) The file(s) to upload and parse. Required if `url` is not provided.
+                  items:
+                    type: string
+                    format: binary
+      responses:
+        '200':
+          description: Standard wrapper. Check the `code` field for status. On success, `data` contains the extracted text.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JsonResult'
+              examples:
+                successUrl:
+                  summary: Successful URL Parse
+                  value:
+                    data: [ "Extracted text section 1", "Extracted text section 2" ]
+                    message: "Success"
+                    code: 0
+                argumentError:
+                  summary: Invalid Input
+                  value:
+                    data: false
+                    message: "No file part!"
+                    code: 100
+  /api/manager/set_meta:
+    post:
+      summary: Update Document Metadata
+      description: Validates and attaches a JSON-encoded dictionary of metadata to a specific document. Only strings, numbers, and flat lists of strings/numbers are permitted.
+      tags:
+        - Manager
+      security:
+        - bearerAuth: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - doc_id
+                - meta
+              properties:
+                doc_id:
+                  type: string
+                  description: The unique identifier of the target document.
+                  example: "doc-12345"
+                meta:
+                  type: string
+                  description: A JSON-encoded string representing the metadata dictionary.
+                  example: "{\"author\": \"John Doe\", \"priority\": 1, \"tags\": [\"AI\", \"Search\"]}"
+      responses:
+        '200':
+          description: Standard wrapper. Check the `code` field for status.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JsonResult'
+              examples:
+                success:
+                  summary: Metadata Updated
+                  value:
+                    data: true
+                    message: "Success"
+                    code: 0
+                invalidTypeError:
+                  summary: Invalid Data Type
+                  value:
+                    data: false
+                    message: "The type is not supported: {nested_obj: 'bad'}"
+                    code: 100
+                authError:
+                  summary: Unauthorized Access
+                  value:
+                    data: false
+                    message: "No authorization."
+                    code: 401
+  /api/manager/upload_info:
+    post:
+      summary: Upload file or URL for info extraction
+      description: Accepts a multipart file and/or a URL query parameter to extract metadata or perform background processing via the File Service. Requires authentication.
+      tags:
+        - Manager
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: url
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uri
+          description: Optional remote URL to analyze.
+          example: "https://example.com/document.pdf"
+      requestBody:
+        required: false
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: Optional file to upload and analyze.
+      responses:
+        '200':
+          description: Standard wrapper. Check the `code` field for success. On success, `data` contains an object with the extracted information.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JsonResult'
+              examples:
+                success:
+                  summary: Information successfully extracted
+                  value:
+                    data:
+                      file_name: "document.pdf"
+                      size_bytes: 1048576
+                      detected_type: "application/pdf"
+                    message: "Success"
+                    code: 0
+                serverError:
+                  summary: Processing Failure
+                  value:
+                    data: false
+                    message: "File format not supported"
+                    code: 500
+  /file2Document/rm:
+    post:
+      summary: Remove files and documents
+      description: Iterates through a provided list of file IDs, removes their mapping bridges, and deletes the underlying documents from the system. Requires authentication.
+      tags:
+        - Document
+      security:
+        - bearerAuth: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - file_ids
+              properties:
+                file_ids:
+                  type: array
+                  description: A list of unique file identifiers to be removed.
+                  items:
+                    type: string
+                  example: [ "file-123", "file-456" ]
+      responses:
+        '200':
+          description: Standard API wrapper response. Check the `code` field to determine success or the specific nature of the failure.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocRemoveResponse'
+              examples:
+                success:
+                  summary: Deletion Successful
+                  value:
+                    data: true
+                    message: "Success"
+                    code: 0
+                missingArgument:
+                  summary: Missing File IDs
+                  value:
+                    data: false
+                    message: "Lack of \"Files ID\""
+                    code: 100
+                dataError:
+                  summary: Missing Document or Mapping
+                  value:
+                    data: false
+                    message: "Document not found!"
+                    code: 200
+                dbError:
+                  summary: Database Removal Failure
+                  value:
+                    data: false
+                    message: "Database error (Document removal)!"
+                    code: 200
+  /file2Document/convert:
+    post:
+      summary: Re-index files to Knowledge Bases
+      description: Iterates through provided file and KB IDs. Overwrites existing mappings, creates new document metadata inheriting the specified Knowledge Base rules, and links them.
+      tags:
+        - Document
+      security:
+        - bearerAuth: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - file_ids
+                - kb_ids
+              properties:
+                file_ids:
+                  type: array
+                  description: List of file or folder IDs to convert.
+                  items:
+                    type: string
+                  example: [ "file-111", "folder-222" ]
+                kb_ids:
+                  type: array
+                  description: List of target Knowledge Base IDs.
+                  items:
+                    type: string
+                  example: [ "kb-888", "kb-999" ]
+      responses:
+        '200':
+          description: Operation wrapper. Check the custom `code` field for success. On success, `data` contains the newly created mappings.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConvertResponse'
+              examples:
+                success:
+                  summary: Conversion Successful
+                  value:
+                    data:
+                      - id: "map-555"
+                        file_id: "file-111"
+                        document_id: "doc-abc"
+                      - id: "map-666"
+                        file_id: "file-111"
+                        document_id: "doc-def"
+                    message: "Success"
+                    code: 0
+                dataError:
+                  summary: Resource Not Found
+                  value:
+                    data: false
+                    message: "Can't find this dataset!"
+                    code: 200 # Maps to RetCode.DATA_ERROR
+                argumentError:
+                  summary: Missing Parameters
+                  value:
+                    data: false
+                    message: "Lack of \"file_ids\" or \"kb_ids\""
+                    code: 100 # Maps to RetCode.ARGUMENT_ERROR
+
+components:
+  schemas:
+    JsonResult:
+      type: object
+      properties:
+        data:
+          description: The payload. On success, this is an array of uploaded file identifiers or names. On failure, it may be an empty array or a boolean value (`false`).
+          # Using oneOf to handle the dynamic return type (Array of strings OR boolean)
+          oneOf:
+            - type: array
+              items:
+                type: string
+            - type: boolean
+        message:
+          type: string
+          description: A human-readable message indicating success or specific error details.
+        code:
+          type: integer
+          description: Application-specific return code mapping to internal `RetCode` enums (e.g., SUCCESS, ARGUMENT_ERROR, DATA_ERROR).
+    JsonRe2sult:
+      type: object
+      properties:
+        data:
+          description: The response payload. On success, this is a Document object. On failure, it is typically a boolean `false`.
+          oneOf:
+            - type: object
+              description: Document Entity JSON
+            - type: boolean
+        message:
+          type: string
+          description: Operational message or error description.
+        code:
+          type: integer
+          description: Application-specific return code (e.g., 0 for SUCCESS, 100 for ARGUMENT_ERROR, 200 for DATA_ERROR).
+    DocRemoveResponse:
+      type: object
+      properties:
+        data:
+          type: boolean
+          description: Returns `true` if all documents and mappings were successfully deleted, `false` otherwise.
+        message:
+          type: string
+          description: A human-readable operational message or error detail.
+        code:
+          type: integer
+          description: Application-specific return code mappings (e.g., 0 for SUCCESS, 100 for ARGUMENT_ERROR, 200 for DATA_ERROR).
+    ConvertResponse:
+      type: object
+      properties:
+        data:
+          description: On success, an array of the newly created File2Document mappings. On failure, a boolean `false`.
+          oneOf:
+            - type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  file_id:
+                    type: string
+                  document_id:
+                    type: string
+            - type: boolean
+        message:
+          type: string
+          description: Operational status message.
+        code:
+          type: integer
+          description: Internal application return code mapping.
+    Json3Result:
+      type: object
+      properties:
+        data:
+          description: On success, a list containing the generated Document IDs. On failure, a boolean `false`.
+          oneOf:
+            - type: array
+              items:
+                type: string
+            - type: boolean
+        message:
+          type: string
+          description: Status message or error description.
+        code:
+          type: integer
+          description: Application-specific return code (0 for SUCCESS, 100 for ARGUMENT_ERROR).
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Enter your JWT Bearer token to access this authenticated endpoint.

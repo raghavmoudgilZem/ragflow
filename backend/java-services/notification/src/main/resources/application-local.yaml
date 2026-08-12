@@ -1,0 +1,24 @@
+server:
+    port: 8089
+    servlet:
+      context-path: /java-notification-service
+
+#MYSQL
+spring:
+  datasource:
+    url: jdbc:mysql://${DB_HOST:localhost}:5455/notification_service?createDatabaseIfNotExist=true
+    username: root
+    password: ${DB_PASSWORD:infini_rag_flow}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    database-platform: org.hibernate.dialect.MySQLDialect
+    show-sql: true
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6380}
+      password: ${REDIS_PASSWORD:infini_rag_flow}
+
+

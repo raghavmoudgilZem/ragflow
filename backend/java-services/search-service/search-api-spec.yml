@@ -1,0 +1,1111 @@
+openapi: 3.0.3
+
+# ============================================================
+# RAGFlow Search Microservice — OpenAPI 3.0 Specification
+# Compatible with:
+#   - swagger.io (paste directly)
+#   - openapi-generator-cli (code generation)
+#   - springdoc-openapi (Spring Boot auto-docs)
+# ============================================================
+
+info:
+  title: RAGFlow Search Service API
+  description: |
+    ## Overview
+    Unified search orchestration microservice for the RAGFlow platform.
+    This service is part of **Phase 4** of the monolith → microservice transition.
+
+    ## Authentication
+    JWT validation is handled by the **API Gateway** (YARP).
+    This service receives pre-validated user context via injected headers:
+    - `X-Tenant-Id` — tenant identifier (injected by gateway)
+    - `X-User-Id`   — user identifier (injected by gateway)
+
+    Do **not** send a Bearer token directly to this service.
+
+    ## Error Handling Division of Labor
+    | Error Type | Handled By |
+    |---|---|
+    | 401 Unauthorized | API Gateway |
+    | 404 Not Found (route) | API Gateway |
+    | 502 Bad Gateway | API Gateway |
+    | 400 Bad Request (validation) | This service |
+    | 403 Forbidden (ownership) | This service |
+    | 500 Internal Server Error | This service |
+
+    ## Monolith Method Mapping
+    | Python Method | Java Endpoint |
+    |---|---|
+    | `save()` | `POST /api/v1/searches` |
+    | `get_detail()` | `GET /api/v1/searches/{id}` |
+    | `get_by_tenant_ids()` | `GET /api/v1/searches` |
+    | `accessible4deletion()` | Internal — used by DELETE |
+    | `delete_by_tenant_id()` | `DELETE /api/v1/searches/tenant/{tenantId}` |
+
+  version: 1.0.0
+  contact:
+    name: RAGFlow Team
+    email: dev@ragflow.com
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
+
+servers:
+  - url: http://localhost:9407
+    description: Local Development (direct to service)
+  - url: http://localhost:8080/api
+    description: Local via API Gateway
+  - url: https://api.ragflow.internal/api
+    description: Production via API Gateway
+
+tags:
+  - name: Unified Search
+    description: >
+      Cross-domain search orchestrating rag-service and chat-service in parallel.
+      New endpoints — not present in the Python monolith.
+  - name: Search Management
+    description: >
+      CRUD for saved search configurations.
+      Ported from Python monolith SearchService methods.
+  - name: Saved Queries
+    description: >
+      User bookmarked search queries for quick re-use.
+      New endpoints — not present in the Python monolith.
+  - name: System
+    description: Health and liveness endpoints.
+
+# ============================================================
+# PATHS
+# ============================================================
+paths:
+
+  # ----------------------------------------------------------
+  # UNIFIED SEARCH — New, not in monolith
+  # ----------------------------------------------------------
+  /v1/search:
+    get:
+      tags:
+        - Unified Search
+      summary: Execute unified parallel search
+      description: |
+        Orchestrates search queries across **rag-service** (vector/semantic)
+        and **chat-service** (conversation history) in parallel using
+        `CompletableFuture`.
+
+        Results are merged, ranked by score, highlighted, and paginated.
+
+        - If rag-service fails → returns chat results only (graceful degradation)
+        - If chat-service fails → returns dataset results only
+        - Timeout per downstream call: **5 seconds**
+      operationId: executeUnifiedSearch
+      parameters:
+        - $ref: '#/components/parameters/XTenantId'
+        - $ref: '#/components/parameters/XUserId'
+        - name: q
+          in: query
+          required: true
+          description: Search query string (1–500 characters)
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 500
+            example: AWS EC2 instances
+        - name: type
+          in: query
+          required: false
+          description: Scope of search
+          schema:
+            type: string
+            enum: [all, dataset, chat]
+            default: all
+        - name: fileType
+          in: query
+          required: false
+          description: Filter by file type (repeatable)
+          schema:
+            type: array
+            items:
+              type: string
+              enum: [pdf, txt, docx, xlsx, md, csv]
+          style: form
+          explode: true
+          example: [pdf, txt]
+        - name: dateFrom
+          in: query
+          required: false
+          description: Filter results from this date (ISO 8601)
+          schema:
+            type: string
+            format: date
+            example: "2025-01-01"
+        - name: dateTo
+          in: query
+          required: false
+          description: Filter results up to this date (ISO 8601)
+          schema:
+            type: string
+            format: date
+            example: "2025-12-31"
+        - name: datasetId
+          in: query
+          required: false
+          description: Scope search to a specific dataset/knowledge base
+          schema:
+            type: string
+            format: uuid
+        - name: mode
+          in: query
+          required: false
+          description: Search mode
+          schema:
+            type: string
+            enum: [keyword, semantic, hybrid]
+            default: hybrid
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - name: size
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+      responses:
+        '200':
+          description: Search executed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponseUnifiedSearch'
+              example:
+                success: true
+                statusCode: 200
+                message: Success
+                timestamp: "2026-07-09T10:00:00Z"
+                data:
+                  query: "AWS EC2 instances"
+                  totalResults: 15
+                  page: 0
+                  size: 10
+                  totalPages: 2
+                  durationMs: 187
+                  results:
+                    - id: "chunk-uuid-001"
+                      source: dataset
+                      type: chunk
+                      title: "AWS Infrastructure Guide.pdf"
+                      snippet: "...EC2 instances for compute workloads..."
+                      highlightedText: "...EC2 <mark>instances</mark> for compute..."
+                      score: 0.92
+                      datasetId: "kb-uuid-001"
+                      datasetName: "AWS Infrastructure Guide"
+                      documentId: "doc-uuid-001"
+                      fileType: pdf
+                    - id: "msg-uuid-001"
+                      source: chat
+                      type: message
+                      title: "AWS Architecture Discussion"
+                      snippet: "We discussed EC2 instance types..."
+                      score: 0.78
+                  facets:
+                    byType:
+                      pdf: 8
+                      txt: 5
+                      chat: 2
+                    bySource:
+                      dataset: 13
+                      chat: 2
+                    byDataset:
+                      AWS Infrastructure Guide: 8
+                      Security Docs: 5
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  # ----------------------------------------------------------
+  # SEARCH MANAGEMENT — Ported from Python monolith
+  # ----------------------------------------------------------
+  /v1/searches:
+    post:
+      tags:
+        - Search Management
+      summary: Create search configuration
+      description: |
+        **Replaces Python:** `SearchService.save(**kwargs)`
+
+        Creates a new search configuration record.
+        Automatically sets `create_time`, `update_time`, and `status=1` (VALID).
+      operationId: createSearchConfig
+      parameters:
+        - $ref: '#/components/parameters/XTenantId'
+        - $ref: '#/components/parameters/XUserId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSearchRequest'
+            example:
+              name: "My AWS Search"
+              description: "Search for AWS infrastructure docs"
+              avatar: "avatar.png"
+              searchConfig: '{"mode":"hybrid","topK":10}'
+      responses:
+        '201':
+          description: Search configuration created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponseSearchDetail'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+    get:
+      tags:
+        - Search Management
+      summary: List searches with pagination
+      description: |
+        **Replaces Python:** `SearchService.get_by_tenant_ids(joined_tenant_ids, user_id, page_number, items_per_page, orderby, desc, keywords)`
+
+        Returns searches accessible to the user — those belonging to their
+        joined tenants OR created by them directly.
+
+        - Keyword filter is **case-insensitive** (`LOWER(name) LIKE LOWER(?)`)
+        - Pagination is **1-based** (matching Python's `paginate()`)
+        - Only returns `status=1` (VALID) records
+      operationId: listSearches
+      parameters:
+        - $ref: '#/components/parameters/XTenantId'
+        - $ref: '#/components/parameters/XUserId'
+        - name: pageNumber
+          in: query
+          required: false
+          description: Page number — 1-based (matches Python paginate())
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: itemsPerPage
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+        - name: orderBy
+          in: query
+          required: false
+          description: Field to sort by
+          schema:
+            type: string
+            enum: [update_time, create_time, name]
+            default: update_time
+        - name: desc
+          in: query
+          required: false
+          description: Sort direction — true = descending
+          schema:
+            type: boolean
+            default: true
+        - name: keywords
+          in: query
+          required: false
+          description: Case-insensitive keyword filter on name field
+          schema:
+            type: string
+            example: "AWS"
+        - name: tenantIds
+          in: query
+          required: false
+          description: Additional tenant IDs to include (repeatable)
+          schema:
+            type: array
+            items:
+              type: string
+              format: uuid
+          style: form
+          explode: true
+      responses:
+        '200':
+          description: List of search configurations
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponseSearchList'
+              example:
+                success: true
+                statusCode: 200
+                message: Success
+                data:
+                  items:
+                    - id: "search-uuid-001"
+                      name: "AWS Search"
+                      tenantId: "tenant-uuid-001"
+                      createdBy: "user-uuid-001"
+                      status: 1
+                      updateTime: 1720512000000
+                      createTime: 1720425600000
+                      nickname: "John Doe"
+                      tenantAvatar: "avatar.png"
+                  total: 25
+                  page: 1
+                  size: 10
+                  totalPages: 3
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /v1/searches/{id}:
+    get:
+      tags:
+        - Search Management
+      summary: Get single search detail
+      description: |
+        **Replaces Python:** `SearchService.get_detail(search_id)`
+
+        Returns full detail of a single search config including
+        joined user data (`nickname`, `tenantAvatar`).
+
+        Python JOIN: `User.id == search.tenant_id AND User.status == VALID`
+      operationId: getSearchDetail
+      parameters:
+        - $ref: '#/components/parameters/XTenantId'
+        - $ref: '#/components/parameters/XUserId'
+        - $ref: '#/components/parameters/SearchId'
+      responses:
+        '200':
+          description: Search detail retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponseSearchDetail'
+              example:
+                success: true
+                statusCode: 200
+                message: Success
+                data:
+                  id: "search-uuid-001"
+                  avatar: "avatar.png"
+                  tenantId: "tenant-uuid-001"
+                  name: "AWS Search"
+                  description: "Search AWS infrastructure"
+                  createdBy: "user-uuid-001"
+                  searchConfig: '{"mode":"hybrid"}'
+                  updateTime: 1720512000000
+                  nickname: "John Doe"
+                  tenantAvatar: "user-avatar.png"
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+    delete:
+      tags:
+        - Search Management
+      summary: Delete search configuration (soft delete)
+      description: |
+        **Replaces Python:** `SearchService.accessible4deletion()` + soft delete
+
+        1. Checks `created_by == X-User-Id AND status == 1` (ownership check)
+        2. If authorized → sets `status = 0` (INVALID) — soft delete
+        3. If not authorized → returns 403 Forbidden
+
+        This is a **soft delete** — record remains in DB with `status=0`.
+      operationId: deleteSearchConfig
+      parameters:
+        - $ref: '#/components/parameters/XTenantId'
+        - $ref: '#/components/parameters/XUserId'
+        - $ref: '#/components/parameters/SearchId'
+      responses:
+        '200':
+          description: Search configuration soft deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponseMessage'
+              example:
+                success: true
+                statusCode: 200
+                message: Search deleted successfully
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /v1/searches/tenant/{tenantId}:
+    delete:
+      tags:
+        - Search Management
+      summary: Delete all searches for a tenant (admin)
+      description: |
+        **Replaces Python:** `SearchService.delete_by_tenant_id(tenant_id)`
+
+        **Hard deletes** all search configurations for the specified tenant.
+        Returns count of deleted rows.
+
+        ⚠️ This is a **hard delete** — records are permanently removed.
+        Admin-only endpoint.
+      operationId: deleteTenantSearches
+      parameters:
+        - $ref: '#/components/parameters/XTenantId'
+        - name: tenantId
+          in: path
+          required: true
+          description: Tenant ID to delete all searches for
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: All tenant searches deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponseDeleteCount'
+              example:
+                success: true
+                statusCode: 200
+                message: "Deleted 5 searches"
+                data: 5
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  # ----------------------------------------------------------
+  # SAVED QUERIES — New, not in monolith
+  # ----------------------------------------------------------
+  /v1/search/saved:
+    post:
+      tags:
+        - Saved Queries
+      summary: Bookmark a search query
+      description: |
+        Saves a search query for quick reuse.
+        Scoped to the authenticated user (`X-User-Id`) and tenant (`X-Tenant-Id`).
+      operationId: saveSearchQuery
+      parameters:
+        - $ref: '#/components/parameters/XTenantId'
+        - $ref: '#/components/parameters/XUserId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SaveSearchQueryRequest'
+            example:
+              name: "My AWS Search"
+              query: "AWS EC2 instances"
+              filters: '{"type":"dataset","fileType":["pdf"]}'
+      responses:
+        '201':
+          description: Query bookmarked
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponseSavedSearch'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+    get:
+      tags:
+        - Saved Queries
+      summary: List user's saved queries
+      description: |
+        Returns all saved search queries for the authenticated user.
+        Soft-deleted queries (`deleted_at IS NOT NULL`) are excluded.
+      operationId: listSavedSearches
+      parameters:
+        - $ref: '#/components/parameters/XTenantId'
+        - $ref: '#/components/parameters/XUserId'
+      responses:
+        '200':
+          description: Saved queries retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponseSavedSearchList'
+              example:
+                success: true
+                statusCode: 200
+                message: Success
+                data:
+                  - id: "saved-uuid-001"
+                    name: "My AWS Search"
+                    query: "AWS EC2 instances"
+                    resultCount: 15
+                    createdAt: "2026-07-09T10:00:00Z"
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /v1/search/saved/{id}:
+    delete:
+      tags:
+        - Saved Queries
+      summary: Remove a saved query
+      description: Soft deletes a saved query by setting `deleted_at`.
+      operationId: deleteSavedSearch
+      parameters:
+        - $ref: '#/components/parameters/XTenantId'
+        - $ref: '#/components/parameters/XUserId'
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Saved query removed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponseMessage'
+              example:
+                success: true
+                statusCode: 200
+                message: Saved search deleted
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  # ----------------------------------------------------------
+  # SYSTEM
+  # ----------------------------------------------------------
+  /health:
+    get:
+      tags:
+        - System
+      summary: Service health check
+      description: Returns service status. No auth required.
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+              example:
+                status: UP
+                service: search-service
+                port: 9407
+                timestamp: "2026-07-09T10:00:00Z"
+
+# ============================================================
+# COMPONENTS
+# ============================================================
+components:
+
+  # ----------------------------------------------------------
+  # REUSABLE PARAMETERS
+  # ----------------------------------------------------------
+  parameters:
+    XTenantId:
+      name: X-Tenant-Id
+      in: header
+      required: true
+      description: Tenant identifier — injected by API Gateway after JWT validation
+      schema:
+        type: string
+        format: uuid
+      example: "tenant-uuid-001"
+
+    XUserId:
+      name: X-User-Id
+      in: header
+      required: true
+      description: User identifier — injected by API Gateway after JWT validation
+      schema:
+        type: string
+        format: uuid
+      example: "user-uuid-001"
+
+    SearchId:
+      name: id
+      in: path
+      required: true
+      description: Search configuration UUID
+      schema:
+        type: string
+        format: uuid
+      example: "search-uuid-001"
+
+  # ----------------------------------------------------------
+  # REUSABLE RESPONSES
+  # ----------------------------------------------------------
+  responses:
+    BadRequest:
+      description: Validation error — handled by this service
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiResponseError'
+          example:
+            success: false
+            statusCode: 400
+            message: "Name is required, Query must not be blank"
+            timestamp: "2026-07-09T10:00:00Z"
+
+    Forbidden:
+      description: Access denied — user does not own this resource
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiResponseError'
+          example:
+            success: false
+            statusCode: 403
+            message: "Access denied or search not found: search-uuid-001"
+            timestamp: "2026-07-09T10:00:00Z"
+
+    InternalError:
+      description: Unexpected server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiResponseError'
+          example:
+            success: false
+            statusCode: 500
+            message: "Internal server error"
+            timestamp: "2026-07-09T10:00:00Z"
+
+  # ----------------------------------------------------------
+  # SCHEMAS
+  # ----------------------------------------------------------
+  schemas:
+
+    # ── Generic wrapper ──────────────────────────────────────
+    ApiResponseError:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        statusCode:
+          type: integer
+          example: 400
+        message:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+
+    ApiResponseMessage:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        statusCode:
+          type: integer
+          example: 200
+        message:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+
+    ApiResponseDeleteCount:
+      type: object
+      properties:
+        success:
+          type: boolean
+        statusCode:
+          type: integer
+        message:
+          type: string
+        data:
+          type: integer
+          description: Number of records deleted
+        timestamp:
+          type: string
+          format: date-time
+
+    # ── Search Management ────────────────────────────────────
+    CreateSearchRequest:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+          description: Display name for the search configuration
+          example: "My AWS Search"
+        description:
+          type: string
+          nullable: true
+          example: "Search for AWS infrastructure docs"
+        avatar:
+          type: string
+          nullable: true
+          example: "avatar.png"
+        searchConfig:
+          type: string
+          nullable: true
+          description: Serialized JSON configuration string
+          example: '{"mode":"hybrid","topK":10}'
+
+    SearchDetail:
+      type: object
+      description: |
+        Full search detail — maps to Python get_detail() response.
+        Includes joined user data (nickname, tenantAvatar).
+      properties:
+        id:
+          type: string
+          format: uuid
+        avatar:
+          type: string
+          nullable: true
+        tenantId:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        createdBy:
+          type: string
+          format: uuid
+        searchConfig:
+          type: string
+          nullable: true
+          description: Serialized JSON config string
+        updateTime:
+          type: integer
+          format: int64
+          description: Unix timestamp in milliseconds
+        nickname:
+          type: string
+          nullable: true
+          description: Tenant user's nickname — from user JOIN
+        tenantAvatar:
+          type: string
+          nullable: true
+          description: Tenant user's avatar — Python User.avatar.alias("tenant_avatar")
+
+    SearchListItem:
+      type: object
+      description: |
+        List item — maps to Python get_by_tenant_ids() fields.
+        Includes all Python list fields plus joined user data.
+      properties:
+        id:
+          type: string
+          format: uuid
+        avatar:
+          type: string
+          nullable: true
+        tenantId:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        createdBy:
+          type: string
+          format: uuid
+        status:
+          type: integer
+          description: "1 = VALID (active), 0 = INVALID (soft deleted)"
+          enum: [0, 1]
+        updateTime:
+          type: integer
+          format: int64
+          description: Unix timestamp in milliseconds
+        createTime:
+          type: integer
+          format: int64
+          description: Unix timestamp in milliseconds
+        nickname:
+          type: string
+          nullable: true
+          description: From user table JOIN
+        tenantAvatar:
+          type: string
+          nullable: true
+          description: Python User.avatar.alias("tenant_avatar")
+
+    SearchListData:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/SearchListItem'
+        total:
+          type: integer
+          format: int64
+          description: Total record count (Python query.count())
+        page:
+          type: integer
+          description: Current page (1-based, matching Python)
+        size:
+          type: integer
+          description: Page size
+        totalPages:
+          type: integer
+
+    ApiResponseSearchDetail:
+      type: object
+      properties:
+        success:
+          type: boolean
+        statusCode:
+          type: integer
+        message:
+          type: string
+        data:
+          $ref: '#/components/schemas/SearchDetail'
+        timestamp:
+          type: string
+          format: date-time
+
+    ApiResponseSearchList:
+      type: object
+      properties:
+        success:
+          type: boolean
+        statusCode:
+          type: integer
+        message:
+          type: string
+        data:
+          $ref: '#/components/schemas/SearchListData'
+        timestamp:
+          type: string
+          format: date-time
+
+    # ── Unified Search ───────────────────────────────────────
+    SearchResultItem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        source:
+          type: string
+          enum: [dataset, chat]
+          description: Which downstream service returned this result
+        type:
+          type: string
+          enum: [chunk, document, message]
+        title:
+          type: string
+          description: Document name or chat dialog title
+        snippet:
+          type: string
+          description: Extracted text around the match (max 200 chars)
+        highlightedText:
+          type: string
+          description: Snippet with matched terms wrapped in <mark> tags
+        score:
+          type: number
+          format: float
+          minimum: 0.0
+          maximum: 1.0
+          description: Relevance score from downstream service
+        datasetId:
+          type: string
+          format: uuid
+          nullable: true
+        datasetName:
+          type: string
+          nullable: true
+        documentId:
+          type: string
+          format: uuid
+          nullable: true
+        fileType:
+          type: string
+          nullable: true
+          example: pdf
+        createdAt:
+          type: string
+          format: date-time
+          nullable: true
+
+    SearchFacets:
+      type: object
+      properties:
+        byType:
+          type: object
+          additionalProperties:
+            type: integer
+          example:
+            pdf: 8
+            txt: 5
+        bySource:
+          type: object
+          additionalProperties:
+            type: integer
+          example:
+            dataset: 13
+            chat: 2
+        byDataset:
+          type: object
+          additionalProperties:
+            type: integer
+
+    UnifiedSearchData:
+      type: object
+      properties:
+        query:
+          type: string
+        totalResults:
+          type: integer
+        page:
+          type: integer
+        size:
+          type: integer
+        totalPages:
+          type: integer
+        durationMs:
+          type: integer
+          format: int64
+          description: Total search execution time in milliseconds
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/SearchResultItem'
+        datasetResults:
+          type: array
+          items:
+            $ref: '#/components/schemas/SearchResultItem'
+          description: Raw results from rag-service (before merge)
+        chatResults:
+          type: array
+          items:
+            $ref: '#/components/schemas/SearchResultItem'
+          description: Raw results from chat-service (before merge)
+        facets:
+          $ref: '#/components/schemas/SearchFacets'
+
+    ApiResponseUnifiedSearch:
+      type: object
+      properties:
+        success:
+          type: boolean
+        statusCode:
+          type: integer
+        message:
+          type: string
+        data:
+          $ref: '#/components/schemas/UnifiedSearchData'
+        timestamp:
+          type: string
+          format: date-time
+
+    # ── Saved Queries ────────────────────────────────────────
+    SaveSearchQueryRequest:
+      type: object
+      required:
+        - name
+        - query
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+          example: "My AWS Search"
+        query:
+          type: string
+          minLength: 1
+          example: "AWS EC2 instances"
+        filters:
+          type: string
+          nullable: true
+          description: Serialized JSON filter string
+          example: '{"type":"dataset","fileType":["pdf"]}'
+
+    SavedSearch:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        query:
+          type: string
+        filters:
+          type: string
+          nullable: true
+        resultCount:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    ApiResponseSavedSearch:
+      type: object
+      properties:
+        success:
+          type: boolean
+        statusCode:
+          type: integer
+        message:
+          type: string
+        data:
+          $ref: '#/components/schemas/SavedSearch'
+        timestamp:
+          type: string
+          format: date-time
+
+    ApiResponseSavedSearchList:
+      type: object
+      properties:
+        success:
+          type: boolean
+        statusCode:
+          type: integer
+        message:
+          type: string
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/SavedSearch'
+        timestamp:
+          type: string
+          format: date-time
+
+    # ── System ───────────────────────────────────────────────
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [UP, DOWN]
+        service:
+          type: string
+          example: search-service
+        port:
+          type: integer
+          example: 9407
+        timestamp:
+          type: string
+          format: date-time

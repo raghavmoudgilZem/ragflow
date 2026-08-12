@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/KnowledgeBase.API/KnowledgeBase.API.csproj" />
+    <Project Path="src/KnowledgeBase.Application/KnowledgeBase.Application.csproj" />
+    <Project Path="src/KnowledgeBase.Domain/KnowledgeBase.Domain.csproj" />
+    <Project Path="src/KnowledgeBase.Infrastructure/KnowledgeBase.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/KnowledgeBase.UnitTests/KnowledgeBase.UnitTests.csproj" />
+  </Folder>
+</Solution>

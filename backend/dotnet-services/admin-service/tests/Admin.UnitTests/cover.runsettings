@@ -1,0 +1,22 @@
+<RunSettings>
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="XPlat code coverage">
+        <Configuration>
+          <Format>cobertura</Format>
+          <ExcludeByFile>
+            **/DTOs/*.cs,
+            **/Models/*.cs,
+            **/Entities/*.cs,
+            **/Program.cs,
+            **/Migrations/*.cs
+          </ExcludeByFile>
+          <Include>
+            **/Controllers/*.cs,
+            **/Services/*.cs
+          </Include>
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+</RunSettings>

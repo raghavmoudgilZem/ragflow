@@ -1,93 +1,495 @@
-# rag_doc_poc
+# Rag
 
+A full-stack application for managing Your own knowledge graph and build your own rag system.
 
-
-## Getting started
-
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
-
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
-
-## Add your files
-
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
+## Project Structure
 
 ```
-cd existing_repo
-git remote add origin https://git.z-apps.io/raghav/rag_doc_poc.git
-git branch -M main
-git push -uf origin main
+rag/
+├── frontend/                                # Frontend applications
+│   ├── angular/                             # Angular app
+│   └── react/                               # React + Vite app
+├── backend/                                 # Backend services
+│   ├── api-gateway/                         # .NET YARP gateway (auth, rate limiting, audit logging)
+│   ├── dotnet-services/                     # .NET microservices
+│   │   ├── admin-service/
+│   │   ├── document-service/
+│   │   ├── file-service/
+│   │   ├── identity-service/
+│   │   └── knowledgebase-service/
+│   ├── java-services/                       # Spring Boot microservices (maven multi-module)
+│   │   ├── dashboard-service/
+│   │   ├── dataset-service/
+│   │   ├── document-service/
+│   │   ├── file-service/
+│   │   ├── identity-service/
+│   │   ├── notification/
+│   │   ├── retrieval-service/
+│   │   └── search-service/
+│   ├── node-services/                       # Node.js / NestJS microservices
+│   │   ├── admin-service/
+│   │   ├── chat-service/
+│   │   ├── connector-service/
+│   │   ├── dataset-service/
+│   │   ├── document-service/
+│   │   ├── file-service/
+│   │   ├── identity-service/
+│   │   ├── llm-config-service/
+│   │   ├── llm-gateway-service/
+│   │   ├── notification-service/
+│   │   ├── parser-service/
+│   │   └── search-service/
+│   └── shared/                              # Shared cross-service config (services.json)
+├── docker/                                  # Docker compose stacks and DB init scripts
+│   ├── docker-compose-base.yml              # Infrastructure (DB, Redis, MinIO, ...)
+│   ├── docker-compose.yml                   # Application services
+│   ├── init.sql                             # MySQL init script
+│   ├── pg_init.sql                          # PostgreSQL init script
+│   └── .env.example
+├── mock-server/                             # Mock API server for local frontend development
+├── LLD/                                     # Low-level design documents
+├── ragflow-automation/                      # Selenium + TestNG automation suite (legacy)
+├── ragflow-automation-rearchitecture/       # Re-architected automation suites
+│   ├── selenium-csharp/                     # C# / NUnit UI tests
+│   └── selenium-testng-java/                # Java / TestNG UI tests
+├── data/                                    # Local data files (mock-server SQLite db)
+├── .gitignore                               # Git ignore file
+└── README.md
 ```
 
-## Integrate with your tools
+## Tech Stack
 
-- [ ] [Set up project integrations](https://git.z-apps.io/raghav/rag_doc_poc/-/settings/integrations)
+### Backend
 
-## Collaborate with your team
+- **NestJS** - Progressive Node.js framework
+- **Prisma** - Next-generation ORM
+- **PostgreSQL** - Relational database
+- **Redis** - Caching and queuing
+- **MinIO** - Object storage
+- **Bull** - Queue management
+- **Swagger** - API documentation
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Set auto-merge](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
+### Frontend
 
-## Test and Deploy
+- **Angular 17+** - Modern web framework
+- **TypeScript** - Type-safe JavaScript
+- **RxJS** - Reactive programming
+- **Angular Material** - UI components
 
-Use the built-in continuous integration in GitLab.
+## Prerequisites
 
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
+- Node.js 18+
+- Docker & Docker Compose
+- npm or yarn
 
-***
+## Quick Start
 
-# Editing this README
+### 1. Clone and Setup
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
+```bash
+cd rag
+```
 
-## Suggestions for a good README
+### 2. Backend Setup
 
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+```bash
+cd dataset-service
 
-## Name
-Choose a self-explaining name for your project.
+# Install dependencies
+npm install
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+# Copy environment file
+cp .env.example .env
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+# Generate Prisma client
+npm run prisma:generate
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+# Run migrations
+npm run prisma:migrate
+```
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+### 3. Frontend Setup
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+```bash
+cd frontend
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+# Install dependencies
+npm install
+```
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+### 4. Run with Docker
+
+```bash
+# From project root
+docker-compose up -d
+```
+
+This will start:
+
+- Mysql (port 3306)
+- Redis (port 6379)
+- MinIO (port 9000, console 9001)
+- Backend API (port 3000)
+- Frontend (port 4200)
+
+### 5. Access Applications
+
+- **Frontend**: http://localhost:4200
+- **Backend API**: http://localhost:3000
+- **API Documentation**: http://localhost:3000/api/docs
+- **MinIO Console**: http://localhost:9001
+
+## Docker Compose Commands
+
+### Basic Commands
+
+```bash
+# Start all services in detached mode
+docker-compose up -d
+
+# Start all services with logs
+docker-compose up
+
+# Stop all services
+docker-compose down
+
+# Stop and remove volumes (WARNING: deletes all data)
+docker-compose down -v
+
+# View logs of all services
+docker-compose logs
+
+# View logs of specific service
+docker-compose logs dataset-service
+docker-compose logs mysql
+
+# Follow logs in real-time
+docker-compose logs -f
+
+# Restart all services
+docker-compose restart
+
+# Restart specific service
+docker-compose restart dataset-service
+
+# View running containers
+docker-compose ps
+
+# Build or rebuild services
+docker-compose build
+
+# Build without cache
+docker-compose build --no-cache
+
+# Pull latest images
+docker-compose pull
+
+# Execute command in running container
+docker-compose exec dataset-service npm run prisma:migrate
+docker-compose exec mysql mysql -u root -p
+
+# Scale a service (if supported)
+docker-compose up -d --scale dataset-service=3
+
+# View resource usage
+docker-compose stats
+```
+
+### Useful Workflows
+
+```bash
+# Rebuild and restart a specific service
+docker-compose up -d --build dataset-service
+
+# View last 100 lines of logs
+docker-compose logs --tail=100
+
+# Remove stopped containers
+docker-compose rm
+
+# Validate docker-compose.yml
+docker-compose config
+
+# Stop services without removing containers
+docker-compose stop
+```
+
+## Development
+
+### Backend Development
+
+```bash
+cd dataset-service
+
+# Run in development mode
+npm run start:dev
+
+# Run tests
+npm run test
+
+# Lint
+npm run lint
+```
+
+### Frontend Development
+
+```bash
+cd web
+
+# Serve with hot reload
+npm run start
+
+# Build for production
+npm run build
+
+# Run tests
+npm run test
+```
+
+```env
+NODE_ENV=development
+PORT=3000
+
+# Database
+DATABASE_URL=postgresql://dataset_user:dataset_password@localhost:5432/dataset_db
+
+# Redis
+REDIS_HOST=localhost
+REDIS_PORT=6379
+
+# MinIO
+MINIO_ENDPOINT=localhost
+MINIO_PORT=9000
+MINIO_ACCESS_KEY=minioadmin
+MINIO_SECRET_KEY=minioadmin
+MINIO_USE_SSL=false
+MINIO_BUCKET_NAME=datasets
+
+```
+
+## Folder Structure to follow
+
+dataset-service/
+├── package.json
+├── tsconfig.json
+├── nest-cli.json
+├── .env
+├── Dockerfile
+├── src/
+│ ├── main.ts
+│ ├── app.module.ts
+│ ├── config/
+│ │ ├── config.module.ts
+│ │ ├── database.config.ts
+│ │ ├── redis.config.ts
+│ │ ├── storage.config.ts
+│ │ └── queue.config.ts
+│ ├── common/
+│ │ ├── decorators/
+│ │ │ ├── auth.decorator.ts
+│ │ │ ├── tenant.decorator.ts
+│ │ │ └── api-version.decorator.ts
+│ │ ├── filters/
+│ │ │ └── http-exception.filter.ts
+│ │ ├── guards/
+│ │ │ ├── auth.guard.ts
+│ │ │ └── permission.guard.ts
+│ │ ├── interceptors/
+│ │ │ ├── logging.interceptor.ts
+│ │ │ ├── transform.interceptor.ts
+│ │ │ └── file-upload.interceptor.ts
+│ │ ├── pipes/
+│ │ │ └── validation.pipe.ts
+│ │ └── interfaces/
+│ │ ├── response.interface.ts
+│ │ └── pagination.interface.ts
+│ ├── modules/
+│ │ ├── dataset/
+│ │ │ ├── dataset.module.ts
+│ │ │ ├── dataset.controller.ts
+│ │ │ ├── dataset.service.ts
+│ │ │ ├── dto/
+│ │ │ │ ├── create-dataset.dto.ts
+│ │ │ │ ├── update-dataset.dto.ts
+│ │ │ │ ├── list-dataset.dto.ts
+│ │ │ │ └── delete-dataset.dto.ts
+│ │ │ ├── entities/
+│ │ │ │ └── dataset.entity.ts
+│ │ │ └── repositories/
+│ │ │ └── dataset.repository.ts
+│ │ │
+│ │ ├── document/ # ← Document module under dataset
+│ │ │ ├── document.module.ts
+│ │ │ ├── document.controller.ts
+│ │ │ ├── document.service.ts
+│ │ │ ├── dto/
+│ │ │ │ ├── create-document.dto.ts
+│ │ │ │ ├── update-document.dto.ts
+│ │ │ │ ├── list-document.dto.ts
+│ │ │ │ └── parse-document.dto.ts
+│ │ │ ├── entities/
+│ │ │ │ └── document.entity.ts
+│ │ │ └── repositories/
+│ │ │ └── document.repository.ts
+│ │ │
+│ │ ├── upload/ # ← Upload module for file handling
+│ │ │ ├── upload.module.ts
+│ │ │ ├── upload.controller.ts
+│ │ │ ├── upload.service.ts
+│ │ │ ├── dto/
+│ │ │ │ └── upload-file.dto.ts
+│ │ │ └── interceptors/
+│ │ │ └── file-validation.interceptor.ts
+│ │ │
+│ │ ├── chunk/ # ← Chunk module
+│ │ │ ├── chunk.module.ts
+│ │ │ ├── chunk.controller.ts
+│ │ │ ├── chunk.service.ts
+│ │ │ ├── dto/
+│ │ │ │ ├── create-chunk.dto.ts
+│ │ │ │ ├── update-chunk.dto.ts
+│ │ │ │ └── list-chunk.dto.ts
+│ │ │ ├── entities/
+│ │ │ │ └── chunk.entity.ts
+│ │ │ └── repositories/
+│ │ │ └── chunk.repository.ts
+│ │ │
+│ │ ├── knowledge-graph/
+│ │ │ ├── knowledge-graph.module.ts
+│ │ │ ├── knowledge-graph.controller.ts
+│ │ │ ├── knowledge-graph.service.ts
+│ │ │ └── dto/
+│ │ │ ├── run-graphrag.dto.ts
+│ │ │ └── run-raptor.dto.ts
+│ │ │
+│ │ └── auth/
+│ │ ├── auth.module.ts
+│ │ ├── auth.service.ts
+│ │ └── strategies/
+│ │ └── jwt.strategy.ts
+│ │
+│ ├── infrastructure/ # ← Infrastructure layer
+│ │ ├── database/
+│ │ │ ├── database.module.ts
+│ │ │ ├── database.service.ts
+│ │ │ └── prisma.service.ts
+│ │ │
+│ │ ├── storage/ # ← Storage module (MinIO)
+│ │ │ ├── storage.module.ts
+│ │ │ ├── storage.service.ts
+│ │ │ └── providers/
+│ │ │ ├── minio.provider.ts
+│ │ │ └── s3.provider.ts
+│ │ │
+│ │ └── queue/ # ← Queue module for async tasks
+│ │ ├── queue.module.ts
+│ │ ├── queue.service.ts
+│ │ └── producers/
+│ │ ├── parsing.producer.ts
+│ │ └── indexing.producer.ts
+│ │
+│ ├── health/
+│ │ ├── health.module.ts
+│ │ └── health.controller.ts
+│ │
+│ └── utils/
+│ ├── logger.ts
+│ ├── response.helper.ts
+│ └── file.helper.ts
+│
+├── prisma/
+│ ├── schema.prisma
+│ └── migrations/
+│
+└── test/
+├── unit/
+└── e2e/
+
+### Backend Architecture
+
+```
+┌─────────────────┐
+│   Controllers   │
+└────────┬────────┘
+         │
+┌────────▼────────┐
+│    Services     │
+└────────┬────────┘
+         │
+┌────────▼────────┐
+│  Repositories   │
+└────────┬────────┘
+         │
+┌────────▼────────┐
+│     Prisma      │
+└────────┬────────┘
+         │
+┌────────▼────────┐
+│      MySql      │
+└─────────────────┘
+```
+
+## Testing
+
+### Backend Tests
+
+```bash
+cd dataset-service
+
+# Unit tests
+npm run test
+
+# E2E tests
+npm run test:e2e
+
+# Coverage
+npm run test:cov
+```
+
+### Frontend Tests
+
+```bash
+cd web
+
+# Unit tests
+npm run test
+
+# E2E tests
+npm run e2e
+```
+
+## Deployment
+
+### Production Build
+
+```bash
+# Backend
+cd dataset-service
+npm run build
+
+# Frontend
+cd web
+npm run build
+```
+
+### Docker Production
+
+```bash
+docker-compose -f docker-compose.yml up -d
+```
 
 ## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
-
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
-
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
 ## License
-For open source projects, say how it is licensed.
 
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+MIT License
+
+## Support
+
+For issues and questions, please open an issue on GitHub.

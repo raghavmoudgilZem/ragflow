@@ -1,0 +1,47 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL_FILE")
+}
+
+enum NodeType {
+  FILE
+  FOLDER
+}
+
+enum StorageProvider {
+  LOCAL
+  MINIO
+  S3
+}
+
+model FileNode {
+  id              String           @id @default(uuid()) @db.Uuid
+  tenantId        String           @map("tenant_id") @db.Uuid
+  createdBy       String           @map("created_by") @db.Uuid
+  name            String           @db.VarChar(255)
+  nodeType        NodeType         @map("node_type")
+  parentId        String?          @map("parent_id") @db.Uuid
+  mimeType        String?          @map("mime_type") @db.VarChar(255)
+  extension       String?          @db.VarChar(50)
+  sizeBytes       BigInt?          @map("size_bytes")
+  storageProvider StorageProvider? @map("storage_provider")
+  storageBucket   String?          @map("storage_bucket") @db.VarChar(255)
+  storageKey      String?          @map("storage_key") @db.VarChar(1024)
+  sourceType      String?          @map("source_type") @db.VarChar(50)
+  createdAt       DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime         @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  parent   FileNode?  @relation("FileNodeHierarchy", fields: [parentId], references: [id], onDelete: Restrict)
+  children FileNode[] @relation("FileNodeHierarchy")
+
+  @@index([tenantId, parentId])
+  @@index([tenantId, parentId, name])
+  @@index([tenantId, nodeType])
+  @@index([parentId])
+
+  @@map("file_nodes")
+}

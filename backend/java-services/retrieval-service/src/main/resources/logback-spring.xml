@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <appender name="jsonConsole" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+            <providers>
+                <timestamp/>
+                <logLevel/>
+                <loggerName/>
+                <message/>
+                <stackTrace/>
+
+                <!-- This dynamically grabs ALL MDC data and nests it under a root "mdc" block -->
+                <mdc>
+                    <fieldName>mdc</fieldName>
+                </mdc>
+            </providers>
+        </encoder>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="jsonConsole" />
+    </root>
+</configuration>

@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AspNetCore.HealthChecks.Rabbitmq" Version="9.0.0" />
+
+    <PackageReference Include="AspNetCore.HealthChecks.Redis" Version="9.0.0" />
+
+    <PackageReference Include="MassTransit" Version="8.5.5" />
+    <PackageReference Include="MassTransit.RabbitMQ" Version="8.5.5" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.0" />
+
+    <PackageReference
+      Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore"
+      Version="9.0.0"
+    />
+    <PackageReference Include="Scalar.AspNetCore" Version="2.16.5" />
+    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="10.2.3" />
+    <!-- <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.3" /> -->
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Ragflow.Identity.Application\Ragflow.Identity.Application.csproj" />
+    <ProjectReference Include="..\Ragflow.Identity.Infrastructure\Ragflow.Identity.Infrastructure.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  
+
+ 
+  <ItemGroup>
+
+
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.8" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.8" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.8">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="9.0.0" />
+
+  </ItemGroup>
+  
+
+  <ItemGroup>
+    <ProjectReference Include="..\KnowledgeBase.Application\KnowledgeBase.Application.csproj" />
+    <ProjectReference Include="..\KnowledgeBase.Domain\KnowledgeBase.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,21 @@
+{
+  "name": "Identity Service Container",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/workspace",
+
+  "forwardPorts": [3000, 3306, 6379],
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "Prisma.prisma",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode"
+      ]
+    }
+  },
+
+  "postCreateCommand": "npm install && npx prisma generate",
+  "remoteUser": "node"
+}

@@ -1,0 +1,1 @@
+{"version":3,"file":"tenant-roles.decorator.js","sourceRoot":"","sources":["../../../../src/auth/decorators/tenant-roles.decorator.ts"],"names":[],"mappings":";;;AAAA,2CAA6C;AAGhC,QAAA,gBAAgB,GAAG,cAAc,CAAC;AACxC,MAAM,WAAW,GAAG,CAAC,GAAG,KAAmB,EAAE,EAAE,CACpD,IAAA,oBAAW,EAAC,wBAAgB,EAAE,KAAK,CAAC,CAAC;AAD1B,QAAA,WAAW,eACe"}
