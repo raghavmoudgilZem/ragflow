@@ -7,6 +7,8 @@ on:
         description: "Path to the microservice (e.g., backend/node-services/identity-service)"
         required: true
 engine: copilot
+secrets:
+  COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 safe-outputs:
   create-pull-request: null
 ---
