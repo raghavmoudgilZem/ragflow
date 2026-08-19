@@ -7,8 +7,8 @@
 ## Extracted Architecture Indicators
 ```mermaid
 flowchart TD
-    Client --> identity-service
-    identity-service --> [(Database)]
+    Client([Client]) --> identity_service[identity-service]
+    identity_service --> DB[(Database)]
 ```
 
 ## Database Models

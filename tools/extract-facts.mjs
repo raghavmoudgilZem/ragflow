@@ -125,6 +125,8 @@ configs = [...new Set(configs)];
 
 // 3. Generate Mermaid Blocks for FACTS.md
 const serviceName = path.basename(targetServicePath);
+// Create a safe ID without hyphens (e.g., identity_service)
+const safeServiceName = serviceName.replace(/[^a-zA-Z0-9]/g, '_');
 
 let mermaidERD = 'No database entities detected.';
 if (models.length > 0) {
@@ -135,9 +137,17 @@ if (models.length > 0) {
   mermaidERD += '```';
 }
 
-let mermaidArch = '```mermaid\nflowchart TD\n    Client --> ' + serviceName + '\n';
-if (models.length > 0) mermaidArch += `    ${serviceName} --> [(Database)]\n`;
-if (dependencies.length > 0) mermaidArch += `    ${serviceName} --> ExternalServices\n`;
+// Fixed Flowchart Syntax with explicit Node IDs
+let mermaidArch = '```mermaid\nflowchart TD\n';
+mermaidArch += `    Client([Client]) --> ${safeServiceName}[${serviceName}]\n`;
+
+if (models.length > 0) {
+  mermaidArch += `    ${safeServiceName} --> DB[(Database)]\n`;
+}
+
+if (dependencies.length > 0) {
+  mermaidArch += `    ${safeServiceName} --> Ext[External Services]\n`;
+}
 mermaidArch += '```';
 
 // 4. Write FACTS.md
