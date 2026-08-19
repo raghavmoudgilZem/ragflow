@@ -20,9 +20,9 @@ fs.mkdirSync(docsFactsDir, { recursive: true });
 
 // 1. Detect Stack Type
 let stackType = 'UNKNOWN';
-if (fs.existsSync(path.join(fullPath), 'pom.xml') || targetServicePath.includes('java-services')) {
+if (fs.existsSync(path.join(fullPath, 'pom.xml')) || targetServicePath.includes('java-services')) {
   stackType = 'JAVA_SPRING_BOOT';
-} else if (fs.existsSync(path.join(fullPath), 'package.json') || targetServicePath.includes('node-services')) {
+} else if (fs.existsSync(path.join(fullPath, 'package.json')) || targetServicePath.includes('node-services')) {
   stackType = 'NODE_NESTJS';
 } else if (fs.readdirSync(fullPath).some(f => f.endsWith('.csproj')) || targetServicePath.includes('dotnet-services') || targetServicePath.includes('api-gateway')) {
   stackType = 'DOTNET';
@@ -30,7 +30,6 @@ if (fs.existsSync(path.join(fullPath), 'pom.xml') || targetServicePath.includes(
 
 console.log(`🔍 Detected Stack: [${stackType}] for ${targetServicePath}`);
 
-// Helper function to recursively read files
 function getAllFiles(dirPath, extensions, arrayOfFiles = []) {
   const files = fs.readdirSync(dirPath);
   files.forEach((file) => {
@@ -48,58 +47,120 @@ function getAllFiles(dirPath, extensions, arrayOfFiles = []) {
 
 let routes = [];
 let configs = [];
+let models = [];
+let dependencies = [];
 
-// 2. Stack-Specific Extraction Logic
+// 2. Stack-Specific Deep Extraction
 if (stackType === 'NODE_NESTJS') {
-  const files = getAllFiles(fullPath, ['.ts', '.js']);
-  files.forEach(file => {
+  const tsFiles = getAllFiles(fullPath, ['.ts', '.js']);
+  tsFiles.forEach(file => {
     const content = fs.readFileSync(file, 'utf-8');
+    // Routes & Configs
     const routeMatches = content.match(/@(Get|Post|Put|Delete|Patch)\s*\(\s*['"`](.*?)['"`]\s*\)/g);
     if (routeMatches) routes.push(...routeMatches.map(m => `${m} in ${path.relative(fullPath, file)}`));
-    
     const envMatches = content.match(/process\.env\.[A-Z0-9_]+/g);
     if (envMatches) configs.push(...envMatches);
+    
+    // Dependencies (Axios, HttpService, Fetch)
+    if (content.includes('HttpService') || content.includes('axios.') || content.includes('fetch(')) {
+      dependencies.push(`External HTTP Call detected in ${path.relative(fullPath, file)}`);
+    }
+  });
+
+  // Prisma Database Models
+  const prismaFiles = getAllFiles(fullPath, ['.prisma']);
+  prismaFiles.forEach(file => {
+    const content = fs.readFileSync(file, 'utf-8');
+    const modelMatches = content.match(/model\s+(\w+)\s*\{/g);
+    if (modelMatches) models.push(...modelMatches.map(m => m.replace('model ', '').replace('{', '').trim()));
   });
 } 
 else if (stackType === 'JAVA_SPRING_BOOT') {
   const files = getAllFiles(fullPath, ['.java', '.yml', '.properties']);
   files.forEach(file => {
     const content = fs.readFileSync(file, 'utf-8');
-    // Spring Annotations: @GetMapping("/api/v1/...")
+    // Routes & Configs
     const routeMatches = content.match(/@(Get|Post|Put|Delete|Request)Mapping\s*\(\s*(value\s*=\s*)?["'](.*?)["']/g);
     if (routeMatches) routes.push(...routeMatches.map(m => `${m} in ${path.relative(fullPath, file)}`));
-
-    // Spring Configs: @Value("${CONFIG_KEY}") or yml properties
     const envMatches = content.match(/@Value\s*\(\s*["']\${(.*?)}["']\s*\)/g);
     if (envMatches) configs.push(...envMatches);
+
+    // JPA Entities
+    if (content.includes('@Entity')) {
+      const className = content.match(/public\s+class\s+(\w+)/);
+      if (className) models.push(className[1]);
+    }
+
+    // Dependencies (RestTemplate, WebClient, Feign)
+    if (content.includes('RestTemplate') || content.includes('WebClient') || content.includes('@FeignClient')) {
+      dependencies.push(`External HTTP Call detected in ${path.relative(fullPath, file)}`);
+    }
   });
 } 
 else if (stackType === 'DOTNET') {
   const files = getAllFiles(fullPath, ['.cs', '.json']);
   files.forEach(file => {
     const content = fs.readFileSync(file, 'utf-8');
-    // C# Attributes: [HttpGet("route")]
-    const routeMatches = content.match(/\[Http(Get|Post|Put|Delete|Patch)\s*\(\s*["'](.*?)["']\s*\)\]/g);
+    // Routes & Configs
+    const routeMatches = content.match(/\[Http(Get\vert{}Post\vert{}Put\vert{}Delete\vert{}Patch)\s*\(\s*["'](.*?)["']\s*\)\]/g);
     if (routeMatches) routes.push(...routeMatches.map(m => `${m} in ${path.relative(fullPath, file)}`));
-
-    // C# Configuration: builder.Configuration["KEY"] or appsettings
     const configMatches = content.match(/Configuration\[["'](.*?)["']\]/g);
     if (configMatches) configs.push(...configMatches);
+
+    // EF Core DbSets
+    const dbSetMatches = content.match(/DbSet<(\w+)>/g);
+    if (dbSetMatches) models.push(...dbSetMatches.map(m => m.replace('DbSet<', '').replace('>', '')));
+
+    // Dependencies
+    if (content.includes('HttpClient ') || content.includes('AddHttpClient')) {
+      dependencies.push(`External HTTP Call detected in ${path.relative(fullPath, file)}`);
+    }
   });
 }
 
-// 3. Write FACTS.md
-const factsContent = `# FACTS PACK FOR ${path.basename(targetServicePath).toUpperCase()}
+// Deduplicate arrays
+models = [...new Set(models)];
+dependencies = [...new Set(dependencies)];
+configs = [...new Set(configs)];
+
+// 3. Generate Mermaid Blocks for FACTS.md
+const serviceName = path.basename(targetServicePath);
+
+let mermaidERD = 'No database entities detected.';
+if (models.length > 0) {
+  mermaidERD = '```mermaid\nerDiagram\n';
+  models.forEach(model => {
+    mermaidERD += `    ${model} {\n        string detected\n    }\n`;
+  });
+  mermaidERD += '```';
+}
+
+let mermaidArch = '```mermaid\nflowchart TD\n    Client --> ' + serviceName + '\n';
+if (models.length > 0) mermaidArch += `    ${serviceName} --> [(Database)]\n`;
+if (dependencies.length > 0) mermaidArch += `    ${serviceName} --> ExternalServices\n`;
+mermaidArch += '```';
+
+// 4. Write FACTS.md
+const factsContent = `# FACTS PACK FOR ${serviceName.toUpperCase()}
 
 ## Stack Meta
 - **Detected Stack:** ${stackType}
 - **Service Path:** \`${targetServicePath}\`
 
+## Extracted Architecture Indicators
+${mermaidArch}
+
+## Database Models
+${mermaidERD}
+
 ## Extracted API Routes
 ${routes.length > 0 ? routes.map(r => `- \`${r}\``).join('\n') : '_No explicit HTTP annotations detected._'}
 
 ## Extracted Environment / Config Keys
-${configs.length > 0 ? [...new Set(configs)].map(c => `- \`${c}\``).join('\n') : '_No explicit environment variables detected._'}
+${configs.length > 0 ? configs.map(c => `- \`${c}\``).join('\n') : '_No explicit environment variables detected._'}
+
+## Outbound Dependencies
+${dependencies.length > 0 ? dependencies.map(d => `- ${d}`).join('\n') : '_No outbound HTTP calls detected._'}
 `;
 
 const factsPath = path.join(docsFactsDir, 'FACTS.md');

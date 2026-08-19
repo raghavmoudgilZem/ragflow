@@ -28,7 +28,7 @@ Cross-cutting infrastructure includes request validation (Yup schemas), async er
 | Logging | Winston [src: backend/node-services/chat-service/package.json:L24] |
 | Testing | Jest + Supertest [src: backend/node-services/chat-service/package.json:L10-L12] |
 
-> **Note:** `FACTS.md` reports the detected stack as `JAVA_SPRING_BOOT`, which does not match the Express/TypeScript implementation [src: backend/node-services/chat-service/docs/facts/FACTS.md:L4-L5].
+> **Note:** `FACTS.md` reports the detected stack as `NODE_NESTJS`, but the service uses Express routing rather than NestJS decorators [src: backend/node-services/chat-service/docs/facts/FACTS.md:L4-L5] [src: backend/node-services/chat-service/src/app.ts:L1-L7].
 
 ## Dependencies
 
@@ -58,7 +58,7 @@ Sibling backend services registered in the shared service registry:
 
 [src: backend/shared/services.json:L2-L8]
 
-Chat Service is not listed in `backend/shared/services.json`.
+Chat Service is not listed in `backend/shared/services.json`. `FACTS.md` reports no outbound HTTP dependencies [src: backend/node-services/chat-service/docs/facts/FACTS.md:L24-L25].
 
 ## Architecture
 
@@ -120,8 +120,8 @@ Implemented in `ChatEngineController` and `ChatEngineService` [src: backend/node
 
 ## ⚠️ To Verify
 
-- [ ] Re-run `node tools/extract-facts.mjs backend/node-services/chat-service` after fixing stack detection (`JAVA_SPRING_BOOT` misidentified an Express service) so routes and env vars populate `FACTS.md` [src: backend/node-services/chat-service/docs/facts/FACTS.md:L4-L11].
+- [ ] `FACTS.md` detects stack as `NODE_NESTJS` but the service is Express — update extractor to support Express `router.get/post/...` patterns [src: backend/node-services/chat-service/docs/facts/FACTS.md:L4-L5].
+- [ ] `FACTS.md` lists no API routes despite Express handlers in source — regenerate after Express route extraction is added [src: backend/node-services/chat-service/docs/facts/FACTS.md:L16-L17].
+- [ ] Drizzle schema tables (`dialogs`, `conversations`, `messages`) are not listed under Database Models in `FACTS.md` [src: backend/node-services/chat-service/docs/facts/FACTS.md:L13-L14] [src: backend/node-services/chat-service/src/core/database/schema.ts:L15-L82].
 - [ ] `system-architecture.json` was not found in the repository; global architecture context could not be loaded.
-- [ ] Chat Service is absent from `backend/shared/services.json` — confirm intended service discovery entry [src: backend/shared/services.json:L2-L8].
-- [ ] `.env.example` lists `DATABASE_URL` while runtime code reads `DATABASE_URL_CHAT` — reconcile before documenting config keys [src: backend/node-services/chat-service/.env.example:L1] [src: backend/node-services/chat-service/src/core/database/index.ts:L16].
-- [ ] Route paths defined in Express routers and controllers are not present in `FACTS.md` and are therefore omitted from the API reference per documentation rules.
+- [ ] `.env.example` lists `DATABASE_URL` while `FACTS.md` and runtime code use `DATABASE_URL_CHAT` [src: backend/node-services/chat-service/.env.example:L1] [src: backend/node-services/chat-service/docs/facts/FACTS.md:L20] [src: backend/node-services/chat-service/src/core/database/index.ts:L16].

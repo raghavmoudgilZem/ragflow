@@ -4,24 +4,22 @@ Environment variables for the Identity Service are defined exclusively by the gr
 
 ## Source of truth
 
-`backend/node-services/identity-service/docs/facts/FACTS.md` — **Environment Variables** section [src: backend/node-services/identity-service/docs/facts/FACTS.md:L5-L17]
+`backend/node-services/identity-service/docs/facts/FACTS.md` — **Extracted Environment / Config Keys** section [src: backend/node-services/identity-service/docs/facts/FACTS.md:L38-L48]
 
 ## Environment variables
 
-All variables below are marked as found in code (`✅`) in `FACTS.md`.
-
-| Variable | Found In Code | Usage in service |
+| Variable | Listed in FACTS.md | Usage in service |
 |---|---|---|
-| `DATABASE_URL` | ✅ | MySQL/MariaDB connection string consumed by `PrismaService` on startup; service throws if undefined [src: backend/node-services/identity-service/docs/facts/FACTS.md:L8] [src: backend/node-services/identity-service/src/prisma/prisma.service.ts:L11-L15] |
-| `FRONTEND_URL` | ✅ | CORS allowed origin for browser clients [src: backend/node-services/identity-service/docs/facts/FACTS.md:L9] [src: backend/node-services/identity-service/src/main.ts:L11-L15] |
-| `JWT_ACCESS_EXPIRATION` | ✅ | Access-token signing expiration passed to `JwtModule` [src: backend/node-services/identity-service/docs/facts/FACTS.md:L10] [src: backend/node-services/identity-service/src/auth/auth.module.ts:L12-L13] |
-| `JWT_SECRET` | ✅ | Secret for signing and verifying JWT access tokens; required at strategy construction [src: backend/node-services/identity-service/docs/facts/FACTS.md:L11] [src: backend/node-services/identity-service/src/auth/auth.module.ts:L12] [src: backend/node-services/identity-service/src/auth/jwt.strategy.ts:L18-L21] |
-| `NODE_ENV` | ✅ | When set to `production`, refresh-token cookies use the `secure` flag [src: backend/node-services/identity-service/docs/facts/FACTS.md:L12] [src: backend/node-services/identity-service/src/auth/auth.controller.ts:L24] [src: backend/node-services/identity-service/src/auth/auth.controller.ts:L102] |
-| `PORT` | ✅ | HTTP listen port for the NestJS application [src: backend/node-services/identity-service/docs/facts/FACTS.md:L13] [src: backend/node-services/identity-service/src/main.ts:L38-L39] |
-| `REDIS_HOST` | ✅ | Redis server hostname [src: backend/node-services/identity-service/docs/facts/FACTS.md:L14] [src: backend/node-services/identity-service/src/redis/redis.module.ts:L11] |
-| `REDIS_PASSWORD` | ✅ | Redis authentication password [src: backend/node-services/identity-service/docs/facts/FACTS.md:L15] [src: backend/node-services/identity-service/src/redis/redis.module.ts:L13] |
-| `REDIS_PORT` | ✅ | Redis server port [src: backend/node-services/identity-service/docs/facts/FACTS.md:L16] [src: backend/node-services/identity-service/src/redis/redis.module.ts:L12] |
-| `REFRESH_COOKIE_MAX_AGE` | ✅ | `maxAge` (milliseconds) for the HTTP-only `refresh_token` cookie [src: backend/node-services/identity-service/docs/facts/FACTS.md:L17] [src: backend/node-services/identity-service/src/auth/auth.controller.ts:L27] |
+| `DATABASE_URL` | `process.env.DATABASE_URL` | MySQL/MariaDB connection string consumed by `PrismaService` on startup; service throws if undefined [src: backend/node-services/identity-service/docs/facts/FACTS.md:L45] [src: backend/node-services/identity-service/src/prisma/prisma.service.ts:L11-L15] |
+| `FRONTEND_URL` | `process.env.FRONTEND_URL` | CORS allowed origin for browser clients [src: backend/node-services/identity-service/docs/facts/FACTS.md:L44] [src: backend/node-services/identity-service/src/main.ts:L11-L15] |
+| `JWT_ACCESS_EXPIRATION` | `process.env.JWT_ACCESS_EXPIRATION` | Access-token signing expiration passed to `JwtModule` [src: backend/node-services/identity-service/docs/facts/FACTS.md:L42] [src: backend/node-services/identity-service/src/auth/auth.module.ts:L12-L13] |
+| `JWT_SECRET` | `process.env.JWT_SECRET` | Secret for signing and verifying JWT access tokens; required at strategy construction [src: backend/node-services/identity-service/docs/facts/FACTS.md:L41] [src: backend/node-services/identity-service/src/auth/auth.module.ts:L12] [src: backend/node-services/identity-service/src/auth/jwt.strategy.ts:L18-L21] |
+| `NODE_ENV` | `process.env.NODE_ENV` | When set to `production`, refresh-token cookies use the `secure` flag [src: backend/node-services/identity-service/docs/facts/FACTS.md:L39] [src: backend/node-services/identity-service/src/auth/auth.controller.ts:L24] [src: backend/node-services/identity-service/src/auth/auth.controller.ts:L102] |
+| `PORT` | `process.env.PORT` | HTTP listen port for the NestJS application [src: backend/node-services/identity-service/docs/facts/FACTS.md:L44] [src: backend/node-services/identity-service/src/main.ts:L38-L39] |
+| `REDIS_HOST` | `process.env.REDIS_HOST` | Redis server hostname [src: backend/node-services/identity-service/docs/facts/FACTS.md:L46] [src: backend/node-services/identity-service/src/redis/redis.module.ts:L11] |
+| `REDIS_PASSWORD` | `process.env.REDIS_PASSWORD` | Redis authentication password [src: backend/node-services/identity-service/docs/facts/FACTS.md:L48] [src: backend/node-services/identity-service/src/redis/redis.module.ts:L13] |
+| `REDIS_PORT` | `process.env.REDIS_PORT` | Redis server port [src: backend/node-services/identity-service/docs/facts/FACTS.md:L47] [src: backend/node-services/identity-service/src/redis/redis.module.ts:L12] |
+| `REFRESH_COOKIE_MAX_AGE` | `process.env.REFRESH_COOKIE_MAX_AGE` | `maxAge` (milliseconds) for the HTTP-only `refresh_token` cookie [src: backend/node-services/identity-service/docs/facts/FACTS.md:L40] [src: backend/node-services/identity-service/src/auth/auth.controller.ts:L27] |
 
 ## Variable checklist
 

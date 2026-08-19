@@ -6,7 +6,7 @@ This page documents HTTP API routes for the Chat Service using **only** the rout
 
 Routes are extracted from:
 
-`backend/node-services/chat-service/docs/facts/FACTS.md` — **Extracted API Routes** section [src: backend/node-services/chat-service/docs/facts/FACTS.md:L7-L8]
+`backend/node-services/chat-service/docs/facts/FACTS.md` — **Extracted API Routes** section [src: backend/node-services/chat-service/docs/facts/FACTS.md:L16-L17]
 
 ## Documented routes
 
@@ -18,7 +18,7 @@ Because no method/path pairs are present in `FACTS.md`, **no API endpoints are d
 
 ## Expected modules (pending facts extraction)
 
-Once `FACTS.md` is regenerated with correct Express route extraction, routes from these modules should appear:
+The facts extractor currently matches NestJS `@Get` / `@Post` decorators only. Express route handlers exist in these files but are not yet captured in `FACTS.md`:
 
 | Module | Route file |
 |---|---|
@@ -29,11 +29,9 @@ Once `FACTS.md` is regenerated with correct Express route extraction, routes fro
 | Multi-Model | `src/modules/multi-model/multi-model.routes.ts` |
 | Health | `src/app.ts` |
 
-These files exist in source but their paths cannot be documented until listed in `FACTS.md`.
-
 ## How to extend this reference
 
-When the facts pack is regenerated:
+When the facts pack is regenerated with Express route support:
 
 1. Copy each route entry exactly from `FACTS.md`.
 2. Add behavior descriptions with `[src: ...]` citations to the matching controller/handler.
@@ -41,6 +39,6 @@ When the facts pack is regenerated:
 
 ## ⚠️ To Verify
 
-- [ ] Fix `tools/extract-facts.mjs` stack detection so `node-services/*` with `package.json` is classified as `NODE_NESTJS` (or a dedicated Express profile) and Express `router.get/post/...` patterns are parsed.
+- [ ] Extend `tools/extract-facts.mjs` to parse Express patterns (`router.get`, `router.post`, `app.get`, etc.) for `node-services` projects.
 - [ ] Regenerate `FACTS.md` and backfill this page with the extracted route list.
-- [ ] Confirm the API versioning and mount prefix used by the central router aggregator once routes are in `FACTS.md` [src: backend/node-services/chat-service/src/core/routes/index.ts:L10-L14].
+- [ ] Confirm mount prefixes from the central router aggregator once routes appear in `FACTS.md` [src: backend/node-services/chat-service/src/core/routes/index.ts:L10-L14].
